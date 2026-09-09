@@ -23,8 +23,22 @@ import { MATERIAL_CATEGORIES, CONFIDENCE_LEVELS } from "@/lib/types";
  * not need to change.
  */
 
-const GEMINI_MODEL = "gemini-2.5-flash";
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+/**
+ * Gemini's free tier meters requests per day *per model*, so a chain of models
+ * multiplies the daily budget instead of sharing one. Exhausting the first is
+ * expected under demo load, not exceptional — the next one takes over.
+ * Ordered best-quality first.
+ */
+const MODEL_CHAIN = [
+  "gemini-3.5-flash",
+  "gemini-3.6-flash",
+  "gemini-3.1-flash-lite",
+  "gemini-flash-lite-latest",
+];
+
+function endpointFor(model: string): string {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+}
 
 const IDENTIFY_PROMPT = `You are a waste-sorting assistant. Look at the photo and identify the single most prominent item.
 
@@ -65,15 +79,19 @@ type GeminiOutcome =
   | { ok: true; value: Record<string, unknown> }
   | { ok: false; error: string };
 
-async function callGeminiJson(parts: GeminiPart[]): Promise<GeminiOutcome> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return { ok: false, error: "AI provider not configured (missing GEMINI_API_KEY)." };
-  }
+type ModelAttempt =
+  | { kind: "ok"; value: Record<string, unknown> }
+  | { kind: "retryable"; error: string }
+  | { kind: "fatal"; error: string };
 
+async function tryModel(
+  model: string,
+  parts: GeminiPart[],
+  apiKey: string
+): Promise<ModelAttempt> {
   let response: Response;
   try {
-    response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+    response = await fetch(`${endpointFor(model)}?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -82,37 +100,60 @@ async function callGeminiJson(parts: GeminiPart[]): Promise<GeminiOutcome> {
       }),
     });
   } catch {
-    return { ok: false, error: "Could not reach the AI provider — check your connection." };
+    return { kind: "retryable", error: "Could not reach the AI service." };
   }
 
+  if (response.status === 429 || response.status >= 500) {
+    return { kind: "retryable", error: "The AI service is busy right now." };
+  }
+
+  // 400/401/403 mean the request or key is wrong; another model won't fix that.
   if (!response.ok) {
-    return { ok: false, error: `AI provider error (status ${response.status}).` };
+    return { kind: "fatal", error: `AI service error (status ${response.status}).` };
   }
 
   let data: GeminiResponse;
   try {
     data = (await response.json()) as GeminiResponse;
   } catch {
-    return { ok: false, error: "AI provider returned an unreadable response." };
+    return { kind: "retryable", error: "The AI service returned an unreadable response." };
   }
 
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) {
-    return { ok: false, error: "AI provider returned no result." };
+    return { kind: "retryable", error: "The AI service returned no result." };
   }
 
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
   } catch {
-    return { ok: false, error: "Could not parse AI response as JSON." };
+    return { kind: "retryable", error: "Could not read the AI response." };
   }
 
   if (typeof parsed !== "object" || parsed === null) {
-    return { ok: false, error: "AI response was not a valid object." };
+    return { kind: "retryable", error: "The AI response was not in the expected format." };
   }
 
-  return { ok: true, value: parsed as Record<string, unknown> };
+  return { kind: "ok", value: parsed as Record<string, unknown> };
+}
+
+async function callGeminiJson(parts: GeminiPart[]): Promise<GeminiOutcome> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return { ok: false, error: "AI provider not configured (missing GEMINI_API_KEY)." };
+  }
+
+  let lastError = "The AI service is unavailable right now.";
+
+  for (const model of MODEL_CHAIN) {
+    const attempt = await tryModel(model, parts, apiKey);
+    if (attempt.kind === "ok") return { ok: true, value: attempt.value };
+    if (attempt.kind === "fatal") return { ok: false, error: attempt.error };
+    lastError = attempt.error;
+  }
+
+  return { ok: false, error: `${lastError} Please try again in a moment.` };
 }
 
 function parseDataUrl(dataUrl: string): { mimeType: string; base64: string } {
