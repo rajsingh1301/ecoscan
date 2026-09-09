@@ -52,7 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </header>
 
-        <main className="flex-1 px-5 py-7">{children}</main>
+        <main className="flex-1 px-5 py-7 flex flex-col items-center">{children}</main>
       </body>
     </html>
   );
