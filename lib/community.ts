@@ -19,28 +19,57 @@ export async function getCurrentUser(): Promise<User | null> {
 
 export const AVATAR_CHOICES = ["🌱", "♻️", "🌍", "🧹", "🌳", "🦋", "🐝", "🌊"];
 
-/**
- * Anonymous sign-in keeps the barrier to joining at "pick a name", which
- * matters more for a community feed than verified identity does.
- */
-export async function joinCommunity(
+export async function sendEmailOtp(email: string): Promise<{ ok: boolean; error?: string }> {
+  const supabase = createClient();
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email: email.trim(),
+    options: { shouldCreateUser: true },
+  });
+
+  // Surface the real message: rate limits and invalid addresses both land here,
+  // and "try again" alone leaves the user with nothing to act on.
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function verifyEmailOtp(
+  email: string,
+  token: string
+): Promise<{ ok: boolean; user?: User; error?: string }> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: email.trim(),
+    token: token.trim(),
+    type: "email",
+  });
+
+  if (error || !data.user) {
+    return { ok: false, error: error?.message ?? "That code didn't work. Please try again." };
+  }
+
+  return { ok: true, user: data.user };
+}
+
+export async function getProfile(userId: string): Promise<Profile | null> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, username, avatar_emoji, city")
+    .eq("id", userId)
+    .maybeSingle();
+  return (data as Profile | null) ?? null;
+}
+
+export async function createProfile(
+  user: User,
   username: string,
   avatarEmoji: string,
   city: string | null
 ): Promise<{ ok: boolean; error?: string }> {
-  const supabase = createClient();
-
-  const { data, error } = await supabase.auth.signInAnonymously();
-
-  if (error || !data.user) {
-    return { ok: false, error: "Could not join right now. Please try again." };
-  }
-
-  const profile = await ensureProfile(data.user, city, username, avatarEmoji);
-  if (!profile) {
-    return { ok: false, error: "Could not create your profile. Please try again." };
-  }
-
+  const profile = await ensureProfile(user, city, username, avatarEmoji);
+  if (!profile) return { ok: false, error: "Could not create your profile. Please try again." };
   return { ok: true };
 }
 
