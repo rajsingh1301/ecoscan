@@ -1,18 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { clearHistory, getHistory, getStreakDays } from "@/lib/storage";
+import { clearHistory, getCleanups, getHistory, getStreakDays } from "@/lib/storage";
 import { VERDICT_STYLES } from "@/lib/verdictStyles";
-import type { ScanRecord, Verdict } from "@/lib/types";
+import type { CleanupRecord, ScanRecord, Verdict } from "@/lib/types";
 import { VERDICTS } from "@/lib/types";
 
 export default function ImpactDashboard() {
   const [history, setHistory] = useState<ScanRecord[]>([]);
+  const [cleanups, setCleanups] = useState<CleanupRecord[]>([]);
 
   useEffect(() => {
     // localStorage is client-only; read post-mount to avoid SSR mismatch.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setHistory(getHistory());
+    setCleanups(getCleanups());
   }, []);
 
   const counts: Record<Verdict, number> = {
@@ -28,9 +30,12 @@ export default function ImpactDashboard() {
   const diverted = counts.recycle + counts.compost + counts.special_dropoff;
   const streak = getStreakDays(history);
 
+  const litterRemoved = cleanups.reduce((sum, c) => sum + c.itemsRemoved, 0);
+
   function handleClear() {
     clearHistory();
     setHistory([]);
+    setCleanups([]);
   }
 
   return (
@@ -49,6 +54,20 @@ export default function ImpactDashboard() {
           <p className="text-xs text-black/50 dark:text-white/50">Day streak</p>
         </div>
       </div>
+
+      {cleanups.length > 0 && (
+        <div className="rounded-xl border border-emerald-500 bg-emerald-50 dark:bg-emerald-950 p-4 flex items-center justify-between">
+          <div>
+            <p className="font-semibold text-sm">🧹 Cleanup Quests</p>
+            <p className="text-xs text-black/60 dark:text-white/60">
+              {cleanups.length} verified · {litterRemoved} pieces of litter removed
+            </p>
+          </div>
+          <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
+            {litterRemoved}
+          </p>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         {VERDICTS.map((verdict) => {

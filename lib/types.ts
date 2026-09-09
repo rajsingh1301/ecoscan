@@ -52,3 +52,36 @@ export interface UserLocation {
   regionKey: string;
   label: string;
 }
+
+export interface DetectedItem {
+  itemName: string;
+  materialCategory: MaterialCategory;
+  count: number;
+}
+
+export interface SceneScanResult {
+  items: DetectedItem[];
+  totalItems: number;
+  recyclableCount: number;
+  landfillCount: number;
+  availableXp: number;
+  note: string;
+}
+
+export interface CleanupVerification {
+  sameLocation: boolean;
+  itemsRemoved: number;
+  itemsRemaining: number;
+  confidence: ConfidenceLevel;
+  notes: string;
+}
+
+export interface CleanupRecord {
+  id: string;
+  timestamp: string;
+  totalItemsBefore: number;
+  itemsRemoved: number;
+  xpEarned: number;
+  lat?: number;
+  lng?: number;
+}

@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import CameraCapture from "@/components/CameraCapture";
 import LocationPicker from "@/components/LocationPicker";
 import VerdictCard from "@/components/VerdictCard";
 import DailyChallengeCard from "@/components/DailyChallengeCard";
-import { addScanRecord, getHistory, getLocation, getStreakDays } from "@/lib/storage";
+import { addScanRecord, getCleanups, getHistory, getLocation, getStreakDays } from "@/lib/storage";
 import { getReasonForVerdict } from "@/lib/rulesEngine";
 import { BADGES, XP_TABLE, getUnlockedBadgeIds } from "@/lib/gamification";
 import type { Badge } from "@/lib/gamification";
@@ -68,8 +69,13 @@ export default function ScanPage() {
       const data = (await res.json()) as IdentifyResponse;
       const id = crypto.randomUUID();
 
+      const cleanups = getCleanups();
       const historyBefore = getHistory();
-      const badgesBefore = getUnlockedBadgeIds(historyBefore, getStreakDays(historyBefore));
+      const badgesBefore = getUnlockedBadgeIds({
+        history: historyBefore,
+        streak: getStreakDays(historyBefore),
+        cleanups,
+      });
 
       addScanRecord({
         id,
@@ -81,7 +87,11 @@ export default function ScanPage() {
       });
 
       const historyAfter = getHistory();
-      const badgesAfter = getUnlockedBadgeIds(historyAfter, getStreakDays(historyAfter));
+      const badgesAfter = getUnlockedBadgeIds({
+        history: historyAfter,
+        streak: getStreakDays(historyAfter),
+        cleanups,
+      });
       const unlockedNow = BADGES.filter((badge) => badgesAfter.has(badge.id) && !badgesBefore.has(badge.id));
 
       setXpGained(XP_TABLE[data.verdict]);
@@ -153,6 +163,12 @@ export default function ScanPage() {
           <DailyChallengeCard />
         </div>
         <CameraCapture onCapture={handleCapture} />
+        <Link
+          href="/cleanup"
+          className="w-full max-w-sm rounded-xl border border-emerald-500 text-emerald-700 dark:text-emerald-300 py-3 text-center text-sm font-medium"
+        >
+          🧹 Start a Cleanup Quest instead
+        </Link>
       </div>
     );
   }

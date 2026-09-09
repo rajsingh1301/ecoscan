@@ -37,8 +37,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Link href="/" className="font-bold text-lg flex items-center gap-1">
             🌎 EcoScan
           </Link>
-          <nav className="flex items-center gap-4 text-sm font-medium">
+          <nav className="flex items-center gap-3 text-sm font-medium">
             <Link href="/">Scan</Link>
+            <Link href="/cleanup">Quest</Link>
             <Link href="/history">Impact</Link>
             <Link href="/settings">Settings</Link>
             <HeaderXpBadge />

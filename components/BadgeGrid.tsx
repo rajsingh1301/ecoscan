@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getHistory, getStreakDays } from "@/lib/storage";
+import { getCleanups, getHistory, getStreakDays } from "@/lib/storage";
 import { BADGES, getUnlockedBadgeIds } from "@/lib/gamification";
 
 export default function BadgeGrid() {
@@ -9,9 +9,14 @@ export default function BadgeGrid() {
 
   useEffect(() => {
     const history = getHistory();
-    const streak = getStreakDays(history);
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUnlocked(getUnlockedBadgeIds(history, streak));
+    setUnlocked(
+      getUnlockedBadgeIds({
+        history,
+        streak: getStreakDays(history),
+        cleanups: getCleanups(),
+      })
+    );
   }, []);
 
   if (unlocked === null) return null;

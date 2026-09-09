@@ -38,22 +38,41 @@ Recycling contamination (putting the wrong item in the wrong bin) is a major rea
 - Dashboard shows: total items scanned, breakdown by category, estimated contamination avoided.
 - Gamification: streak counter for daily scans.
 
-### F6. Contamination Score (Stretch, high-value for "Originality")
-- User can photograph a whole bin instead of one item.
-- Claude vision analyzes multiple visible items in one image and flags anything that doesn't belong.
-- Returns a "bin health" score + list of items to remove.
+### F6. Cleanup Quest — AI-verified community cleanup
+The headline differentiator: other apps give *advice*, this one verifies *action*.
+
+- User photographs a littered area; AI detects and counts every piece of litter in one frame.
+- App shows the item breakdown, recoverable/landfill split, and the XP available for clearing it.
+- User cleans the area, then photographs the same spot again.
+- AI compares the before/after pair and awards XP **only for litter genuinely removed**.
+- Optional GPS tagging of completed quests (browser geolocation, never required).
+
+**Integrity rules (these are the point of the feature):**
+1. **Same-location check.** If the "after" photo isn't plausibly the same place, zero XP is awarded. Enforced in `app/api/scene/verify/route.ts`, server-side — never in the UI, so it can't be bypassed by a client.
+2. **Conservative crediting.** The verification prompt instructs the model to credit fewer items when unsure, and to lower confidence rather than assume items were removed when framing changed.
+3. **Partial credit is honest credit.** Removing 8 of 12 items earns 8 items' worth of XP, not a pass or a fail.
+4. **Full-cleanup bonus** only when every detected item is gone.
+
+Verified by an end-to-end test against the live model: a genuine cleanup scored full credit, a
+different-location "after" photo scored zero, and an identical before/after pair correctly scored
+zero items removed rather than rubber-stamping the claim.
 
 ---
 
+### F7. Gamification
+XP per scan (by verdict) and per verified cleanup, a 7-tier level ladder (Seedling → Eco Legend),
+12 achievement badges, and a rotating daily challenge. All of it is **derived from stored records**
+(`lib/gamification.ts`) rather than kept as a separate counter, so there is no state to drift.
+
 ## 3. Nice-to-Have Features (only if time permits, in priority order)
 
-1. **Shareable results** — "I diverted X items from landfill this week" share card (image export).
-2. **Multi-item batch scan** — scan several items in sequence, get a session summary.
+1. **Community cleanup leaderboard** — needs a real backend (no server-side store today); the GPS
+   coordinates already captured per quest are the hook for it.
+2. **Shareable results** — "I removed X pieces of litter this week" share card (image export).
 3. **Offline queue** — if no connection, queue photos and process when back online (PWA service worker).
-4. **Household leaderboard** — compare stats with friends/family via a shared code.
-5. **Voice output** — read the verdict aloud (accessibility).
+4. **Voice output** — read the verdict aloud (accessibility).
 
-**Rule: stretch features are only started after F1–F5 are fully working and demo-able end to end.** A polished 5-feature app beats a broken 8-feature app under judging criteria "Completion."
+**Rule: stretch features are only started after the core flows are fully working and demo-able end to end.** A polished small app beats a broken large one under the "Completion" judging criterion.
 
 ---
 

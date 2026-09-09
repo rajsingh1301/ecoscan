@@ -2,12 +2,27 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+const MAX_DIMENSION = 1024;
+const JPEG_QUALITY = 0.85;
+
 interface CameraCaptureProps {
   onCapture: (base64Image: string) => void;
+  label?: string;
   disabled?: boolean;
 }
 
-export default function CameraCapture({ onCapture, disabled }: CameraCaptureProps) {
+function scaledSize(width: number, height: number): { width: number; height: number } {
+  const longest = Math.max(width, height);
+  if (longest <= MAX_DIMENSION) return { width, height };
+  const ratio = MAX_DIMENSION / longest;
+  return { width: Math.round(width * ratio), height: Math.round(height * ratio) };
+}
+
+export default function CameraCapture({
+  onCapture,
+  label = "📸 Scan Item",
+  disabled,
+}: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,36 +69,53 @@ export default function CameraCapture({ onCapture, disabled }: CameraCaptureProp
     };
   }, []);
 
+  const drawToDataUrl = useCallback(
+    (source: CanvasImageSource, sourceWidth: number, sourceHeight: number): string | null => {
+      const canvas = canvasRef.current;
+      if (!canvas || sourceWidth === 0 || sourceHeight === 0) return null;
+
+      const { width, height } = scaledSize(sourceWidth, sourceHeight);
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return null;
+
+      ctx.drawImage(source, 0, 0, width, height);
+      return canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+    },
+    []
+  );
+
   const capturePhoto = useCallback(() => {
     const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video) return;
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-    onCapture(dataUrl);
-  }, [onCapture]);
+    const dataUrl = drawToDataUrl(video, video.videoWidth, video.videoHeight);
+    if (dataUrl) onCapture(dataUrl);
+  }, [drawToDataUrl, onCapture]);
 
   const handleFileUpload = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
+      event.target.value = "";
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = () => {
-        if (typeof reader.result === "string") {
-          onCapture(reader.result);
-        }
+        if (typeof reader.result !== "string") return;
+
+        const image = new Image();
+        image.onload = () => {
+          const dataUrl = drawToDataUrl(image, image.naturalWidth, image.naturalHeight);
+          onCapture(dataUrl ?? (reader.result as string));
+        };
+        image.onerror = () => onCapture(reader.result as string);
+        image.src = reader.result;
       };
       reader.readAsDataURL(file);
-      event.target.value = "";
     },
-    [onCapture]
+    [drawToDataUrl, onCapture]
   );
 
   return (
@@ -111,7 +143,7 @@ export default function CameraCapture({ onCapture, disabled }: CameraCaptureProp
           disabled={disabled || !cameraReady}
           className="flex-1 rounded-full bg-emerald-600 text-white font-medium py-3 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition"
         >
-          📸 Scan Item
+          {label}
         </button>
         <button
           type="button"

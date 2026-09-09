@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getHistory } from "@/lib/storage";
-import { computeXp, getLevelProgress } from "@/lib/gamification";
+import { getCleanups, getHistory } from "@/lib/storage";
+import { computeTotalXp, getLevelProgress } from "@/lib/gamification";
 
 export default function LevelBar() {
   const [xp, setXp] = useState(0);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setXp(computeXp(getHistory()));
+    setXp(computeTotalXp(getHistory(), getCleanups()));
   }, []);
 
   const progress = getLevelProgress(xp);

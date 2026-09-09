@@ -1,4 +1,10 @@
-import type { IdentifyResult, MaterialCategory, ConfidenceLevel } from "@/lib/types";
+import type {
+  IdentifyResult,
+  MaterialCategory,
+  ConfidenceLevel,
+  DetectedItem,
+  CleanupVerification,
+} from "@/lib/types";
 import { MATERIAL_CATEGORIES, CONFIDENCE_LEVELS } from "@/lib/types";
 
 /**
@@ -55,6 +61,60 @@ interface GeminiResponse {
   }[];
 }
 
+type GeminiOutcome =
+  | { ok: true; value: Record<string, unknown> }
+  | { ok: false; error: string };
+
+async function callGeminiJson(parts: GeminiPart[]): Promise<GeminiOutcome> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return { ok: false, error: "AI provider not configured (missing GEMINI_API_KEY)." };
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: { responseMimeType: "application/json" },
+      }),
+    });
+  } catch {
+    return { ok: false, error: "Could not reach the AI provider — check your connection." };
+  }
+
+  if (!response.ok) {
+    return { ok: false, error: `AI provider error (status ${response.status}).` };
+  }
+
+  let data: GeminiResponse;
+  try {
+    data = (await response.json()) as GeminiResponse;
+  } catch {
+    return { ok: false, error: "AI provider returned an unreadable response." };
+  }
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) {
+    return { ok: false, error: "AI provider returned no result." };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return { ok: false, error: "Could not parse AI response as JSON." };
+  }
+
+  if (typeof parsed !== "object" || parsed === null) {
+    return { ok: false, error: "AI response was not a valid object." };
+  }
+
+  return { ok: true, value: parsed as Record<string, unknown> };
+}
+
 function parseDataUrl(dataUrl: string): { mimeType: string; base64: string } {
   const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
   if (!match) {
@@ -82,62 +142,18 @@ function fallbackResult(reasoning: string): IdentifyResult {
 }
 
 export async function identifyImage(base64Image: string): Promise<IdentifyResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return fallbackResult("AI provider not configured (missing GEMINI_API_KEY).");
-  }
-
   const { mimeType, base64 } = parseDataUrl(base64Image);
 
-  const parts: GeminiPart[] = [
+  const outcome = await callGeminiJson([
     { text: IDENTIFY_PROMPT },
     { inline_data: { mime_type: mimeType, data: base64 } },
-  ];
+  ]);
 
-  let response: Response;
-  try {
-    response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts }],
-        generationConfig: {
-          responseMimeType: "application/json",
-        },
-      }),
-    });
-  } catch {
-    return fallbackResult("Could not reach the AI provider — check your connection.");
+  if (!outcome.ok) {
+    return fallbackResult(outcome.error);
   }
 
-  if (!response.ok) {
-    return fallbackResult(`AI provider error (status ${response.status}).`);
-  }
-
-  let data: GeminiResponse;
-  try {
-    data = (await response.json()) as GeminiResponse;
-  } catch {
-    return fallbackResult("AI provider returned an unreadable response.");
-  }
-
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) {
-    return fallbackResult("AI provider returned no result.");
-  }
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    return fallbackResult("Could not parse AI response as JSON.");
-  }
-
-  if (typeof parsed !== "object" || parsed === null) {
-    return fallbackResult("AI response was not a valid object.");
-  }
-
-  const record = parsed as Record<string, unknown>;
+  const record = outcome.value;
   const materialCategory = isMaterialCategory(record.materialCategory)
     ? record.materialCategory
     : "mixed_other";
@@ -156,3 +172,132 @@ export function isMockMode(): boolean {
 }
 
 export const SUPPORTED_CATEGORIES = MATERIAL_CATEGORIES;
+
+const MAX_SCENE_ITEMS = 40;
+
+const SCENE_SCAN_PROMPT = `You are analyzing a photo of a littered area for a community cleanup app.
+
+Identify every piece of litter or loose waste visible in the scene. Group identical items together and give a count.
+
+Respond with JSON only:
+{
+  "items": [{ "itemName": string, "materialCategory": ${MATERIAL_CATEGORIES.join(" | ")}, "count": number }],
+  "note": string (one short sentence describing the scene)
+}
+
+Rules:
+- Count only actual litter/waste. Do NOT count permanent fixtures: bins, benches, signs, buildings, parked vehicles, plants, or people.
+- Items still inside a proper bin are not litter — do not count them.
+- If you cannot tell an item's material, use "mixed_other".
+- Cap the total count at ${MAX_SCENE_ITEMS}. If there is clearly more, count up to the cap and say so in the note.
+- If there is no visible litter, return an empty items array and explain that in the note.`;
+
+export async function scanScene(
+  base64Image: string
+): Promise<{ items: DetectedItem[]; note: string; error?: string }> {
+  const { mimeType, base64 } = parseDataUrl(base64Image);
+
+  const outcome = await callGeminiJson([
+    { text: SCENE_SCAN_PROMPT },
+    { inline_data: { mime_type: mimeType, data: base64 } },
+  ]);
+
+  if (!outcome.ok) {
+    return { items: [], note: "", error: outcome.error };
+  }
+
+  const rawItems = Array.isArray(outcome.value.items) ? outcome.value.items : [];
+  const items: DetectedItem[] = [];
+  let running = 0;
+
+  for (const raw of rawItems) {
+    if (typeof raw !== "object" || raw === null) continue;
+    const entry = raw as Record<string, unknown>;
+
+    const itemName =
+      typeof entry.itemName === "string" && entry.itemName.trim() ? entry.itemName.trim() : "Unidentified litter";
+    const materialCategory = isMaterialCategory(entry.materialCategory) ? entry.materialCategory : "mixed_other";
+    const parsedCount = typeof entry.count === "number" ? Math.floor(entry.count) : 1;
+    const count = Math.max(1, Math.min(parsedCount, MAX_SCENE_ITEMS - running));
+
+    if (count <= 0) break;
+
+    items.push({ itemName, materialCategory, count });
+    running += count;
+    if (running >= MAX_SCENE_ITEMS) break;
+  }
+
+  const note =
+    typeof outcome.value.note === "string" && outcome.value.note.trim()
+      ? outcome.value.note.trim()
+      : items.length > 0
+        ? "Litter detected in this area."
+        : "No litter detected in this scene.";
+
+  return { items, note };
+}
+
+const VERIFY_PROMPT_HEADER = `You are verifying a community cleanup for an app that awards points. Be strict and honest — people earn real rewards based on your answer, so never give credit that was not earned.
+
+You are given two photos of the same place: the FIRST image is BEFORE the cleanup, the SECOND image is AFTER.
+
+Respond with JSON only:
+{
+  "sameLocation": boolean,
+  "itemsRemoved": number,
+  "itemsRemaining": number,
+  "confidence": "high" | "medium" | "low",
+  "notes": string (one or two short sentences explaining your assessment)
+}
+
+Rules:
+- sameLocation: true only if the AFTER photo plausibly shows the same place as the BEFORE photo (same ground surface, background, or landmarks). A different angle, distance, or lighting is fine. A clearly different place is false.
+- itemsRemoved: how many of the items listed below are genuinely gone in the AFTER photo. It must never exceed the total listed.
+- If the AFTER photo is framed so differently that items may simply be out of frame rather than removed, do not assume they were removed: lower itemsRemoved, set confidence to "low", and say so in notes.
+- Be conservative. When unsure, credit fewer items rather than more.`;
+
+export async function verifyCleanup(
+  beforeImage: string,
+  afterImage: string,
+  detectedItems: DetectedItem[]
+): Promise<{ verification: CleanupVerification | null; error?: string }> {
+  const before = parseDataUrl(beforeImage);
+  const after = parseDataUrl(afterImage);
+
+  const totalItems = detectedItems.reduce((sum, item) => sum + item.count, 0);
+  const itemList = detectedItems.map((item) => `- ${item.itemName} x${item.count}`).join("\n");
+
+  const prompt = `${VERIFY_PROMPT_HEADER}
+
+The BEFORE photo was assessed to contain these ${totalItems} item(s):
+${itemList || "- (none recorded)"}`;
+
+  const outcome = await callGeminiJson([
+    { text: prompt },
+    { text: "BEFORE photo:" },
+    { inline_data: { mime_type: before.mimeType, data: before.base64 } },
+    { text: "AFTER photo:" },
+    { inline_data: { mime_type: after.mimeType, data: after.base64 } },
+  ]);
+
+  if (!outcome.ok) {
+    return { verification: null, error: outcome.error };
+  }
+
+  const record = outcome.value;
+  const rawRemoved = typeof record.itemsRemoved === "number" ? Math.floor(record.itemsRemoved) : 0;
+  const itemsRemoved = Math.max(0, Math.min(rawRemoved, totalItems));
+
+  return {
+    verification: {
+      sameLocation: record.sameLocation !== false,
+      itemsRemoved,
+      itemsRemaining: totalItems - itemsRemoved,
+      confidence: isConfidenceLevel(record.confidence) ? record.confidence : "low",
+      notes:
+        typeof record.notes === "string" && record.notes.trim()
+          ? record.notes.trim()
+          : "No additional notes provided.",
+    },
+  };
+}

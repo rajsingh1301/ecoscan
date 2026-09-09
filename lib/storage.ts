@@ -1,7 +1,8 @@
-import type { ScanRecord, UserLocation } from "@/lib/types";
+import type { CleanupRecord, ScanRecord, UserLocation } from "@/lib/types";
 
 const LOCATION_KEY = "ecoscan:location";
 const HISTORY_KEY = "ecoscan:history";
+const CLEANUPS_KEY = "ecoscan:cleanups";
 
 function isBrowser(): boolean {
   return typeof window !== "undefined";
@@ -45,6 +46,26 @@ export function addScanRecord(record: ScanRecord): void {
 export function clearHistory(): void {
   if (!isBrowser()) return;
   window.localStorage.removeItem(HISTORY_KEY);
+  window.localStorage.removeItem(CLEANUPS_KEY);
+}
+
+export function getCleanups(): CleanupRecord[] {
+  if (!isBrowser()) return [];
+  const raw = window.localStorage.getItem(CLEANUPS_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as CleanupRecord[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addCleanupRecord(record: CleanupRecord): void {
+  if (!isBrowser()) return;
+  const cleanups = getCleanups();
+  cleanups.unshift(record);
+  window.localStorage.setItem(CLEANUPS_KEY, JSON.stringify(cleanups.slice(0, 200)));
 }
 
 export function getStreakDays(history: ScanRecord[]): number {
