@@ -59,7 +59,27 @@ zero items removed rather than rubber-stamping the claim.
 
 ---
 
-### F7. Gamification
+### F7. Community
+A shared feed where people post verified cleanups, badge unlocks, level-ups, and streaks.
+
+- **Auth:** Google sign-in via Supabase. A profile row is created on first sign-in using the
+  Google display name, so there is no separate signup step.
+- **Communities are cities.** The region the user already selected doubles as their community;
+  the feed has a *My city*, a *Global*, and a *Cities* leaderboard tab. No new concept to manage.
+- **Reactions only** (👏). Comments are deliberately out of scope — they would add a text
+  moderation surface for little gain at this size.
+- **AI photo moderation.** Before a cleanup post is published, both photos are screened by the
+  same Gemini model that verifies cleanups (`/api/community/moderate`): it blocks recognisable
+  faces, readable plates or house numbers, unsuitable content, and non-place images such as
+  screenshots or documents.
+
+**Known limitation (honest):** the moderation call and the row insert both happen client-side,
+because the app holds only the publishable Supabase key. RLS restricts writes to the signed-in
+user's own rows, but a determined user could insert a post without passing moderation. Moving the
+insert behind a server route with a secret key is the fix, and is the next thing to do if this
+grows beyond a demo.
+
+### F8. Gamification
 XP per scan (by verdict) and per verified cleanup, a 7-tier level ladder (Seedling → Eco Legend),
 12 achievement badges, and a rotating daily challenge. All of it is **derived from stored records**
 (`lib/gamification.ts`) rather than kept as a separate counter, so there is no state to drift.
@@ -179,7 +199,8 @@ Backend prompts Claude to return **strict JSON only**:
 1. **Never guess silently.** If Claude's confidence is "low," the UI must say so and offer a manual category picker instead of asserting a wrong verdict — a wrong "recycle" is worse than an honest "not sure."
 2. **Default-safe fallback.** If a region has no specific rule for a category, fall back to the `default` ruleset rather than failing.
 3. **Location is required before scanning.** The app cannot show a verdict without a location context (even if it's just "default/unknown region") — disposal rules are meaningless without it.
-4. **No image is stored server-side.** Images are sent to Claude for analysis and discarded immediately after the response — only the lightweight scan *record* (not the photo) persists, and only in the user's own browser. This is a privacy rule, not just a technical default.
+4. **No image is stored unless the user explicitly shares it.** Images sent for analysis are discarded immediately after the response; only the lightweight scan *record* (not the photo) persists, and only in the user's own browser. The single exception is a Cleanup Quest the user chooses to post to the community — those before/after photos are uploaded to storage as part of that deliberate act, never automatically.
+7. **Shared posts carry a city, never a coordinate.** Quests record optional GPS locally for the user's own history, but a published post exposes only the region key. Precise location never leaves the device.
 5. **Special drop-off items are never marked "trash."** Batteries, electronics, and hazardous materials must always route to "special_dropoff," even under low confidence — safety default over convenience.
 6. **One source of truth for verdicts.** The mapping from `materialCategory` → `verdict` lives only in `rules.json`, never hardcoded in UI components — keeps region rules auditable and easy to extend during judging Q&A.
 

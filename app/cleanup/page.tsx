@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import CameraCapture from "@/components/CameraCapture";
 import LocationPicker from "@/components/LocationPicker";
+import ShareToCommunity from "@/components/ShareToCommunity";
 import { addCleanupRecord, getCleanups, getHistory, getLocation, getStreakDays } from "@/lib/storage";
 import { BADGES, getUnlockedBadgeIds } from "@/lib/gamification";
 import type { Badge } from "@/lib/gamification";
@@ -31,6 +32,7 @@ export default function CleanupPage() {
   const [screen, setScreen] = useState<Screen>("loading");
   const [location, setUserLocation] = useState<UserLocation | null>(null);
   const [beforeImage, setBeforeImage] = useState<string | null>(null);
+  const [afterImage, setAfterImage] = useState<string | null>(null);
   const [scene, setScene] = useState<SceneScanResult | null>(null);
   const [verification, setVerification] = useState<VerifyResponse | null>(null);
   const [newBadges, setNewBadges] = useState<Badge[]>([]);
@@ -59,6 +61,7 @@ export default function CleanupPage() {
 
   function resetQuest() {
     setBeforeImage(null);
+    setAfterImage(null);
     setScene(null);
     setVerification(null);
     setNewBadges([]);
@@ -99,6 +102,7 @@ export default function CleanupPage() {
 
   async function handleAfterCapture(afterImage: string) {
     if (!beforeImage || !scene) return;
+    setAfterImage(afterImage);
     setScreen("verifying");
 
     try {
@@ -381,6 +385,19 @@ export default function CleanupPage() {
               </p>
             ))}
           </div>
+        )}
+
+        {!failed && beforeImage && afterImage && (
+          <ShareToCommunity
+            prompt="Show your work to the community 🌍"
+            post={{
+              type: "cleanup",
+              beforeImage,
+              afterImage,
+              itemsRemoved: verification.itemsRemoved,
+              xpEarned: verification.xpEarned,
+            }}
+          />
         )}
 
         <button

@@ -207,7 +207,10 @@ export async function scanScene(
   }
 
   const rawItems = Array.isArray(outcome.value.items) ? outcome.value.items : [];
-  const items: DetectedItem[] = [];
+
+  // The model often returns the same thing as several rows ("Bottle x2", "Bottle x1")
+  // instead of grouping it, so fold matching rows together before display.
+  const grouped = new Map<string, DetectedItem>();
   let running = 0;
 
   for (const raw of rawItems) {
@@ -222,10 +225,19 @@ export async function scanScene(
 
     if (count <= 0) break;
 
-    items.push({ itemName, materialCategory, count });
+    const key = `${itemName.toLowerCase()}|${materialCategory}`;
+    const existing = grouped.get(key);
+    if (existing) {
+      existing.count += count;
+    } else {
+      grouped.set(key, { itemName, materialCategory, count });
+    }
+
     running += count;
     if (running >= MAX_SCENE_ITEMS) break;
   }
+
+  const items = [...grouped.values()];
 
   const note =
     typeof outcome.value.note === "string" && outcome.value.note.trim()
@@ -235,6 +247,51 @@ export async function scanScene(
         : "No litter detected in this scene.";
 
   return { items, note };
+}
+
+const MODERATION_PROMPT = `You are screening photos that a user wants to publish to a public community feed in a litter-cleanup app. The photos are supposed to show a place before and after being cleaned.
+
+Respond with JSON only:
+{
+  "allowed": boolean,
+  "reason": string (one short sentence; if allowed, a brief confirmation)
+}
+
+Set allowed to false if any photo contains:
+- A recognisable human face, or a person as the clear subject of the photo
+- A readable vehicle licence plate, house number, or other identifying personal detail
+- Nudity, violence, gore, or other content unsuitable for a general audience
+- Content that is clearly not an outdoor/indoor place or waste (for example a screenshot, a document, or a selfie)
+
+Set allowed to true for ordinary photos of streets, parks, beaches, rooms, or waste.
+Distant, small, or incidental people who are not identifiable are acceptable.
+When genuinely uncertain, allow the photo rather than blocking it, but say why in the reason.`;
+
+export async function moderateImages(
+  images: string[]
+): Promise<{ allowed: boolean; reason: string }> {
+  const parts: GeminiPart[] = [{ text: MODERATION_PROMPT }];
+
+  for (const image of images) {
+    const { mimeType, base64 } = parseDataUrl(image);
+    parts.push({ inline_data: { mime_type: mimeType, data: base64 } });
+  }
+
+  const outcome = await callGeminiJson(parts);
+
+  if (!outcome.ok) {
+    return { allowed: false, reason: "Could not check the photos right now. Please try again." };
+  }
+
+  const allowed = outcome.value.allowed === true;
+  const reason =
+    typeof outcome.value.reason === "string" && outcome.value.reason.trim()
+      ? outcome.value.reason.trim()
+      : allowed
+        ? "Photos look fine."
+        : "These photos can't be shared publicly.";
+
+  return { allowed, reason };
 }
 
 const VERIFY_PROMPT_HEADER = `You are verifying a community cleanup for an app that awards points. Be strict and honest — people earn real rewards based on your answer, so never give credit that was not earned.

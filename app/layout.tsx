@@ -40,8 +40,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <nav className="flex items-center gap-3 text-sm font-medium">
             <Link href="/">Scan</Link>
             <Link href="/cleanup">Quest</Link>
+            <Link href="/community">Community</Link>
             <Link href="/history">Impact</Link>
-            <Link href="/settings">Settings</Link>
+            <Link href="/settings" aria-label="Settings">
+              ⚙️
+            </Link>
             <HeaderXpBadge />
           </nav>
         </header>

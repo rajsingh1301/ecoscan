@@ -85,3 +85,38 @@ export interface CleanupRecord {
   lat?: number;
   lng?: number;
 }
+
+export const POST_TYPES = ["cleanup", "badge", "level", "streak"] as const;
+
+export type PostType = (typeof POST_TYPES)[number];
+
+export interface FeedPost {
+  id: string;
+  user_id: string;
+  type: PostType;
+  caption: string | null;
+  before_url: string | null;
+  after_url: string | null;
+  items_removed: number | null;
+  xp_earned: number | null;
+  badge_id: string | null;
+  level_reached: number | null;
+  streak_days: number | null;
+  city: string;
+  created_at: string;
+  username: string;
+  avatar_emoji: string;
+  reaction_count: number;
+}
+
+export interface NewPost {
+  type: PostType;
+  caption?: string;
+  beforeImage?: string;
+  afterImage?: string;
+  itemsRemoved?: number;
+  xpEarned?: number;
+  badgeId?: string;
+  levelReached?: number;
+  streakDays?: number;
+}

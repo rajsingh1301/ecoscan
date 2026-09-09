@@ -6,6 +6,7 @@ import CameraCapture from "@/components/CameraCapture";
 import LocationPicker from "@/components/LocationPicker";
 import VerdictCard from "@/components/VerdictCard";
 import DailyChallengeCard from "@/components/DailyChallengeCard";
+import ShareToCommunity from "@/components/ShareToCommunity";
 import { addScanRecord, getCleanups, getHistory, getLocation, getStreakDays } from "@/lib/storage";
 import { getReasonForVerdict } from "@/lib/rulesEngine";
 import { BADGES, XP_TABLE, getUnlockedBadgeIds } from "@/lib/gamification";
@@ -215,6 +216,15 @@ export default function ScanPage() {
           onOverride={handleOverride}
           onScanAgain={handleScanAgain}
         />
+
+        {newBadges.length > 0 && (
+          <div className="w-full max-w-sm">
+            <ShareToCommunity
+              prompt={`Share your "${newBadges[0].name}" badge?`}
+              post={{ type: "badge", badgeId: newBadges[0].id }}
+            />
+          </div>
+        )}
       </div>
     );
   }
