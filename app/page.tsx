@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import CameraCapture from "@/components/CameraCapture";
 import LocationPicker from "@/components/LocationPicker";
 import VerdictCard from "@/components/VerdictCard";
-import { addScanRecord, getLocation } from "@/lib/storage";
+import DailyChallengeCard from "@/components/DailyChallengeCard";
+import { addScanRecord, getHistory, getLocation, getStreakDays } from "@/lib/storage";
 import { getReasonForVerdict } from "@/lib/rulesEngine";
+import { BADGES, XP_TABLE, getUnlockedBadgeIds } from "@/lib/gamification";
+import type { Badge } from "@/lib/gamification";
 import type { UserLocation, Verdict, ConfidenceLevel, MaterialCategory } from "@/lib/types";
 
 interface IdentifyResponse {
@@ -25,6 +28,8 @@ export default function ScanPage() {
   const [result, setResult] = useState<IdentifyResponse | null>(null);
   const [scanId, setScanId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [xpGained, setXpGained] = useState(0);
+  const [newBadges, setNewBadges] = useState<Badge[]>([]);
 
   useEffect(() => {
     // localStorage is only available client-side; reading it post-mount (not
@@ -63,6 +68,9 @@ export default function ScanPage() {
       const data = (await res.json()) as IdentifyResponse;
       const id = crypto.randomUUID();
 
+      const historyBefore = getHistory();
+      const badgesBefore = getUnlockedBadgeIds(historyBefore, getStreakDays(historyBefore));
+
       addScanRecord({
         id,
         timestamp: new Date().toISOString(),
@@ -72,6 +80,12 @@ export default function ScanPage() {
         confidence: data.confidence,
       });
 
+      const historyAfter = getHistory();
+      const badgesAfter = getUnlockedBadgeIds(historyAfter, getStreakDays(historyAfter));
+      const unlockedNow = BADGES.filter((badge) => badgesAfter.has(badge.id) && !badgesBefore.has(badge.id));
+
+      setXpGained(XP_TABLE[data.verdict]);
+      setNewBadges(unlockedNow);
       setResult(data);
       setScanId(id);
       setScreen("result");
@@ -89,6 +103,7 @@ export default function ScanPage() {
       reason: getReasonForVerdict(result.materialCategory, newVerdict),
     };
     setResult(updated);
+    setXpGained(XP_TABLE[newVerdict]);
 
     if (scanId) {
       addScanRecord({
@@ -105,6 +120,8 @@ export default function ScanPage() {
   function handleScanAgain() {
     setResult(null);
     setScanId(null);
+    setXpGained(0);
+    setNewBadges([]);
     setScreen("camera");
   }
 
@@ -132,6 +149,9 @@ export default function ScanPage() {
         <p className="text-sm text-black/50 dark:text-white/50">
           Scanning for: <span className="font-medium">{location?.label}</span>
         </p>
+        <div className="w-full max-w-sm">
+          <DailyChallengeCard />
+        </div>
         <CameraCapture onCapture={handleCapture} />
       </div>
     );
@@ -174,6 +194,8 @@ export default function ScanPage() {
           verdict={result.verdict}
           reason={result.reason}
           confidence={result.confidence}
+          xpGained={xpGained}
+          newBadges={newBadges}
           onOverride={handleOverride}
           onScanAgain={handleScanAgain}
         />

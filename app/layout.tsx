@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import HeaderXpBadge from "@/components/HeaderXpBadge";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,10 +37,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Link href="/" className="font-bold text-lg flex items-center gap-1">
             🌎 EcoScan
           </Link>
-          <nav className="flex gap-4 text-sm font-medium">
+          <nav className="flex items-center gap-4 text-sm font-medium">
             <Link href="/">Scan</Link>
             <Link href="/history">Impact</Link>
             <Link href="/settings">Settings</Link>
+            <HeaderXpBadge />
           </nav>
         </header>
         <main className="flex-1 flex flex-col items-center px-4 py-6">{children}</main>
