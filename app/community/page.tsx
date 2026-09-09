@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import PostCard from "@/components/PostCard";
+import JoinCommunity from "@/components/JoinCommunity";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import {
   ensureProfile,
   fetchCityLeaderboard,
   fetchFeed,
   getMyReactedPostIds,
-  signInWithGoogle,
   signOut,
   toggleReaction,
 } from "@/lib/community";
@@ -118,7 +118,7 @@ export default function CommunityPage() {
     <div className="w-full max-w-sm flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Community</h1>
-        {user ? (
+        {user && (
           <button
             type="button"
             onClick={async () => {
@@ -127,15 +127,7 @@ export default function CommunityPage() {
             }}
             className="text-xs text-black/50 dark:text-white/50 underline"
           >
-            Sign out
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => signInWithGoogle("/community")}
-            className="rounded-full bg-emerald-600 text-white text-xs font-medium px-3 py-1.5"
-          >
-            Sign in with Google
+            Leave
           </button>
         )}
       </div>
@@ -162,9 +154,13 @@ export default function CommunityPage() {
       </div>
 
       {!user && (
-        <p className="text-xs text-center text-black/50 dark:text-white/50">
-          Sign in to share your cleanups and cheer others on.
-        </p>
+        <JoinCommunity
+          prompt="Join to share your cleanups and cheer others on"
+          onJoined={async () => {
+            const { data } = await createClient().auth.getUser();
+            setUser(data.user ?? null);
+          }}
+        />
       )}
 
       {loadingFeed && (

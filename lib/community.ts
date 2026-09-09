@@ -17,12 +17,31 @@ export async function getCurrentUser(): Promise<User | null> {
   return data.user ?? null;
 }
 
-export async function signInWithGoogle(redirectPath = "/community"): Promise<void> {
+export const AVATAR_CHOICES = ["🌱", "♻️", "🌍", "🧹", "🌳", "🦋", "🐝", "🌊"];
+
+/**
+ * Anonymous sign-in keeps the barrier to joining at "pick a name", which
+ * matters more for a community feed than verified identity does.
+ */
+export async function joinCommunity(
+  username: string,
+  avatarEmoji: string,
+  city: string | null
+): Promise<{ ok: boolean; error?: string }> {
   const supabase = createClient();
-  await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: `${window.location.origin}${redirectPath}` },
-  });
+
+  const { data, error } = await supabase.auth.signInAnonymously();
+
+  if (error || !data.user) {
+    return { ok: false, error: "Could not join right now. Please try again." };
+  }
+
+  const profile = await ensureProfile(data.user, city, username, avatarEmoji);
+  if (!profile) {
+    return { ok: false, error: "Could not create your profile. Please try again." };
+  }
+
+  return { ok: true };
 }
 
 export async function signOut(): Promise<void> {
@@ -30,11 +49,12 @@ export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
 }
 
-/**
- * Creates the profile row on first sign-in, deriving a display name from the
- * Google account so there is no extra setup step for the user.
- */
-export async function ensureProfile(user: User, city: string | null): Promise<Profile | null> {
+export async function ensureProfile(
+  user: User,
+  city: string | null,
+  username?: string,
+  avatarEmoji?: string
+): Promise<Profile | null> {
   const supabase = createClient();
 
   const { data: existing } = await supabase
@@ -45,16 +65,14 @@ export async function ensureProfile(user: User, city: string | null): Promise<Pr
 
   if (existing) return existing as Profile;
 
-  const metadata = user.user_metadata as Record<string, unknown> | null;
-  const rawName =
-    (typeof metadata?.full_name === "string" && metadata.full_name) ||
-    (typeof metadata?.name === "string" && metadata.name) ||
-    user.email?.split("@")[0] ||
-    "EcoScanner";
-
   const { data: created, error } = await supabase
     .from("profiles")
-    .insert({ id: user.id, username: rawName.slice(0, 40), city })
+    .insert({
+      id: user.id,
+      username: (username?.trim() || "EcoScanner").slice(0, 40),
+      avatar_emoji: avatarEmoji ?? AVATAR_CHOICES[0],
+      city,
+    })
     .select("id, username, avatar_emoji, city")
     .single();
 

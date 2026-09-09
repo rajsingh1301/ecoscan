@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { createPost, ensureProfile, signInWithGoogle } from "@/lib/community";
+import JoinCommunity from "@/components/JoinCommunity";
+import { createPost, ensureProfile } from "@/lib/community";
 import { getLocation } from "@/lib/storage";
 import type { NewPost } from "@/lib/types";
 
@@ -50,16 +51,13 @@ export default function ShareToCommunity({ post, prompt = "Share this to the com
 
   if (!user) {
     return (
-      <div className="w-full rounded-xl border border-black/10 dark:border-white/20 p-4 flex flex-col gap-2 text-center">
-        <p className="text-sm font-medium">{prompt}</p>
-        <button
-          type="button"
-          onClick={() => signInWithGoogle(window.location.pathname)}
-          className="rounded-full bg-emerald-600 text-white text-sm font-medium py-2.5"
-        >
-          Sign in with Google to share
-        </button>
-      </div>
+      <JoinCommunity
+        prompt={prompt}
+        onJoined={async () => {
+          const { data } = await createClient().auth.getUser();
+          setUser(data.user ?? null);
+        }}
+      />
     );
   }
 
