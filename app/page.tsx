@@ -142,33 +142,88 @@ export default function ScanPage() {
 
   if (screen === "needs-location") {
     return (
-      <div className="flex flex-col items-center gap-6 w-full">
-        <div className="text-center max-w-sm">
-          <h1 className="text-xl font-bold mb-2">Welcome to EcoScan 🌎</h1>
-          <p className="text-sm text-black/60 dark:text-white/60">
-            Disposal rules vary by location. Set yours to get accurate guidance.
+      <div className="shell flex flex-col gap-7 fade-up">
+        <div className="flex flex-col gap-3">
+          <span className="eyebrow">First things first</span>
+          <h1 className="display text-[2.1rem]">
+            The same bottle belongs in different bins in different cities.
+          </h1>
+          <p className="text-[0.95rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+            Tell EcoScan where you are and every answer follows your local
+            collection rules — not a generic guess.
           </p>
         </div>
         <LocationPicker onSaved={handleLocationSaved} />
+
+        <section className="flex flex-col gap-2.5">
+          <div className="rule-label">
+            <span className="eyebrow">Every scan ends in one of four</span>
+          </div>
+          <div className="streams">
+            {(
+              [
+                ["Recycle", "var(--recycle)", "Kerbside bin"],
+                ["Compost", "var(--compost)", "Food & garden"],
+                ["Landfill", "var(--landfill)", "General waste"],
+                ["Drop-off", "var(--dropoff)", "Batteries, e-waste"],
+              ] as const
+            ).map(([name, color, note]) => (
+              <div key={name} className="stream-row">
+                <span className="stream-swatch" style={{ background: color }} aria-hidden="true" />
+                <span className="stream-name">{name}</span>
+                <span className="stream-note">{note}</span>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     );
   }
 
   if (screen === "camera") {
     return (
-      <div className="flex flex-col items-center gap-4 w-full">
-        <p className="text-sm text-black/50 dark:text-white/50">
-          Scanning for: <span className="font-medium">{location?.label}</span>
-        </p>
-        <div className="w-full max-w-sm">
-          <DailyChallengeCard />
+      <div className="shell flex flex-col gap-6 fade-up">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-3">
+            <span className="eyebrow">{location?.label}</span>
+            <Link
+              href="/settings"
+              className="eyebrow underline underline-offset-2"
+              style={{ color: "var(--ink-faint)" }}
+            >
+              Change
+            </Link>
+          </div>
+          <h1 className="display text-[1.85rem]">What are you throwing away?</h1>
         </div>
+
         <CameraCapture onCapture={handleCapture} />
-        <Link
-          href="/cleanup"
-          className="w-full max-w-sm rounded-xl border border-emerald-500 text-emerald-700 dark:text-emerald-300 py-3 text-center text-sm font-medium"
-        >
-          🧹 Start a Cleanup Quest instead
+
+        <DailyChallengeCard />
+
+        <Link href="/cleanup" className="quest-link">
+          <span className="flex flex-col gap-0.5">
+            <span className="text-[0.95rem] font-semibold">Clean a whole place</span>
+            <span className="text-[0.8rem]" style={{ color: "var(--ink-soft)" }}>
+              Scan the mess, clear it, prove it
+            </span>
+          </span>
+          <svg
+            className="quest-link-arrow"
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M3.5 9h11m0 0-4-4m4 4-4 4"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </Link>
       </div>
     );
@@ -176,22 +231,23 @@ export default function ScanPage() {
 
   if (screen === "identifying") {
     return (
-      <div className="flex flex-col items-center gap-4 mt-16">
-        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-black/60 dark:text-white/60">Identifying item…</p>
+      <div className="shell flex flex-col items-center gap-4 pt-24 text-center">
+        <div className="spinner" />
+        <p className="text-[0.9rem]" style={{ color: "var(--ink-soft)" }}>
+          Working out what this is…
+        </p>
       </div>
     );
   }
 
   if (screen === "error") {
     return (
-      <div className="flex flex-col items-center gap-4 mt-16 text-center">
-        <p className="text-sm text-red-600">{errorMessage}</p>
-        <button
-          type="button"
-          onClick={handleScanAgain}
-          className="rounded-full bg-emerald-600 text-white font-medium px-6 py-3"
-        >
+      <div className="shell flex flex-col items-center gap-5 pt-24 text-center fade-up">
+        <span className="eyebrow">Didn&apos;t work</span>
+        <p className="text-[0.95rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+          {errorMessage}
+        </p>
+        <button type="button" onClick={handleScanAgain} className="btn btn-primary">
           Try again
         </button>
       </div>
@@ -200,12 +256,7 @@ export default function ScanPage() {
 
   if (screen === "result" && result) {
     return (
-      <div className="flex flex-col items-center gap-4 w-full">
-        {result.mock && (
-          <p className="text-xs text-center text-black/40 dark:text-white/40 max-w-sm">
-            Demo mode — using mock identification. Real Claude (Bedrock) integration pending API key.
-          </p>
-        )}
+      <div className="shell flex flex-col gap-4 fade-up">
         <VerdictCard
           itemName={result.itemName}
           verdict={result.verdict}
@@ -218,12 +269,10 @@ export default function ScanPage() {
         />
 
         {newBadges.length > 0 && (
-          <div className="w-full max-w-sm">
-            <ShareToCommunity
-              prompt={`Share your "${newBadges[0].name}" badge?`}
-              post={{ type: "badge", badgeId: newBadges[0].id }}
-            />
-          </div>
+          <ShareToCommunity
+            prompt={`Share your "${newBadges[0].name}" badge?`}
+            post={{ type: "badge", badgeId: newBadges[0].id }}
+          />
         )}
       </div>
     );

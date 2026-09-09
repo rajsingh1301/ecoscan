@@ -21,16 +21,16 @@ export default function LocationPicker({ currentRegionKey, onSaved }: LocationPi
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-sm">
-      <div>
-        <label htmlFor="region" className="block text-sm font-medium mb-2">
-          Your location
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
+        <label htmlFor="region" className="eyebrow">
+          Where are you?
         </label>
         <select
           id="region"
           value={regionKey}
           onChange={(e) => setRegionKey(e.target.value)}
-          className="w-full rounded-lg border border-black/10 dark:border-white/20 bg-transparent px-3 py-2"
+          className="field"
         >
           {DEMO_REGIONS.map((region) => (
             <option key={region.key} value={region.key}>
@@ -38,17 +38,13 @@ export default function LocationPicker({ currentRegionKey, onSaved }: LocationPi
             </option>
           ))}
         </select>
-        <p className="text-xs text-black/50 dark:text-white/50 mt-2">
-          Disposal rules vary by city — pick the closest match, or &quot;Other&quot; for generic guidance.
+        <p className="text-[0.78rem] leading-relaxed" style={{ color: "var(--ink-faint)" }}>
+          Not on the list? Pick the generic rules — they cover the safe answer everywhere.
         </p>
       </div>
 
-      <button
-        type="button"
-        onClick={handleSave}
-        className="rounded-full bg-emerald-600 text-white font-medium py-3 active:scale-95 transition"
-      >
-        Save location
+      <button type="button" onClick={handleSave} className="btn btn-primary">
+        Start scanning
       </button>
     </div>
   );

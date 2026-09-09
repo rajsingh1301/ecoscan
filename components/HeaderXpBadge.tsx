@@ -14,12 +14,12 @@ export default function HeaderXpBadge() {
 
   if (xp === null) return null;
 
-  const progress = getLevelProgress(xp);
+  const { level } = getLevelProgress(xp);
 
   return (
-    <div className="flex items-center gap-1.5 rounded-full border border-black/10 dark:border-white/20 px-2.5 py-1 text-xs font-medium">
-      <span>{progress.level.emoji}</span>
-      <span>Lv.{progress.level.level}</span>
-    </div>
+    <span className="level-chip" title={`${level.title} · ${xp} XP`}>
+      <span className="level-chip-mark" aria-hidden="true" />
+      L{level.level}
+    </span>
   );
 }

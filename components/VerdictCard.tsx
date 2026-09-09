@@ -27,64 +27,52 @@ export default function VerdictCard({
   onOverride,
   onScanAgain,
 }: VerdictCardProps) {
-  const [overriding, setOverriding] = useState(false);
-  const style = VERDICT_STYLES[verdict];
+  const [correcting, setCorrecting] = useState(false);
 
   return (
-    <div className={`w-full max-w-sm rounded-2xl border-2 ${style.border} ${style.bg} p-6 flex flex-col gap-4`}>
-      {typeof xpGained === "number" && xpGained > 0 && (
-        <div className="self-start rounded-full bg-emerald-600 text-white text-xs font-bold px-3 py-1 animate-bounce">
-          +{xpGained} XP
+    <div className="flex flex-col gap-4">
+      <article className="verdict" data-stream={verdict}>
+        <div className="flex flex-col gap-1.5">
+          <span className="eyebrow">{itemName}</span>
+          <h1 className="verdict-word">{VERDICT_STYLES[verdict].label}</h1>
         </div>
-      )}
 
-      {newBadges && newBadges.length > 0 && (
-        <div className="rounded-lg bg-amber-100 dark:bg-amber-900 border border-amber-400 p-3 flex flex-col gap-1">
-          <p className="text-sm font-bold">🎉 New Badge Unlocked!</p>
-          {newBadges.map((badge) => (
-            <p key={badge.id} className="text-sm">
-              {badge.emoji} {badge.name} — {badge.description}
-            </p>
-          ))}
-        </div>
-      )}
+        <p className="verdict-reason">{reason}</p>
 
-      <div>
-        <p className="text-sm text-black/50 dark:text-white/50">{itemName}</p>
-        <p className={`text-3xl font-bold ${style.text} flex items-center gap-2 mt-1`}>
-          <span>{style.emoji}</span>
-          {style.label}
-        </p>
-      </div>
-
-      <p className="text-sm leading-relaxed">{reason}</p>
+        {typeof xpGained === "number" && xpGained > 0 && (
+          <span className="xp-tick">+{xpGained} XP</span>
+        )}
+      </article>
 
       {confidence === "low" && (
-        <div className="rounded-lg bg-black/5 dark:bg-white/10 p-3 text-sm">
-          <p className="font-medium mb-2">
-            ⚠️ Not fully sure about this one. Pick the correct category if this looks wrong:
+        <div className="unsure">
+          <p className="text-[0.85rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+            <span style={{ color: "var(--ink)", fontWeight: 600 }}>Not certain about this one.</span>{" "}
+            If the answer looks wrong, set it yourself — your correction is what gets saved.
           </p>
-          {!overriding ? (
+
+          {!correcting ? (
             <button
               type="button"
-              onClick={() => setOverriding(true)}
-              className="underline font-medium"
+              onClick={() => setCorrecting(true)}
+              className="self-start text-[0.85rem] font-semibold underline underline-offset-2"
+              style={{ color: "var(--moss)" }}
             >
-              Correct this
+              Correct it
             </button>
           ) : (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {VERDICTS.map((v) => (
+            <div className="chip-row">
+              {VERDICTS.map((option) => (
                 <button
-                  key={v}
+                  key={option}
                   type="button"
                   onClick={() => {
-                    onOverride?.(v);
-                    setOverriding(false);
+                    onOverride?.(option);
+                    setCorrecting(false);
                   }}
-                  className={`rounded-full border px-3 py-1 text-xs font-medium ${VERDICT_STYLES[v].border} ${VERDICT_STYLES[v].text}`}
+                  className="chip"
                 >
-                  {VERDICT_STYLES[v].emoji} {VERDICT_STYLES[v].label}
+                  {VERDICT_STYLES[option].label}
                 </button>
               ))}
             </div>
@@ -92,12 +80,23 @@ export default function VerdictCard({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={onScanAgain}
-        className="rounded-full border border-black/10 dark:border-white/20 py-3 font-medium active:scale-95 transition"
-      >
-        Scan another item
+      {newBadges && newBadges.length > 0 && (
+        <div className="celebrate">
+          <span className="eyebrow">Badge unlocked</span>
+          {newBadges.map((badge) => (
+            <p key={badge.id} className="text-[0.9rem] font-semibold">
+              {badge.name}
+              <span className="font-normal" style={{ color: "var(--ink-soft)" }}>
+                {" "}
+                — {badge.description.toLowerCase()}
+              </span>
+            </p>
+          ))}
+        </div>
+      )}
+
+      <button type="button" onClick={onScanAgain} className="btn btn-quiet">
+        Scan something else
       </button>
     </div>
   );

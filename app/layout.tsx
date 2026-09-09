@@ -1,54 +1,58 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Figtree } from "next/font/google";
 import Link from "next/link";
 import HeaderXpBadge from "@/components/HeaderXpBadge";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const display = Fraunces({
   subsets: ["latin"],
+  axes: ["SOFT", "WONK", "opsz"],
+  variable: "--font-display",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const body = Figtree({
   subsets: ["latin"],
+  variable: "--font-body",
 });
 
 export const metadata: Metadata = {
   title: "EcoScan",
-  description: "AI-powered waste sorting assistant — NextStep Hacks 2026",
+  description: "Point your camera at anything and find out where it actually goes.",
   manifest: "/manifest.json",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#059669",
+  themeColor: "#2f6b4f",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${display.variable} ${body.variable} h-full`}>
       <body className="min-h-full flex flex-col">
-        <header className="border-b border-black/10 dark:border-white/10 px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="font-bold text-lg flex items-center gap-1">
-            🌎 EcoScan
-          </Link>
-          <nav className="flex items-center gap-3 text-sm font-medium">
-            <Link href="/">Scan</Link>
-            <Link href="/cleanup">Quest</Link>
-            <Link href="/community">Community</Link>
-            <Link href="/history">Impact</Link>
-            <Link href="/settings" aria-label="Settings">
-              ⚙️
+        <header className="masthead">
+          <div className="masthead-inner">
+            <Link href="/" className="wordmark">
+              EcoScan
+              <span className="wordmark-dot" aria-hidden="true" />
             </Link>
-            <HeaderXpBadge />
-          </nav>
+            <nav className="navbar">
+              <Link href="/cleanup" className="navlink">
+                Quest
+              </Link>
+              <Link href="/community" className="navlink">
+                Feed
+              </Link>
+              <Link href="/history" className="navlink">
+                Impact
+              </Link>
+              <HeaderXpBadge />
+            </nav>
+          </div>
         </header>
-        <main className="flex-1 flex flex-col items-center px-4 py-6">{children}</main>
+
+        <main className="flex-1 px-5 py-7">{children}</main>
       </body>
     </html>
   );

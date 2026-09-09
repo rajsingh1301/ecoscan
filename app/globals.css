@@ -1,26 +1,701 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ---------------------------------------------------------------------------
+   Tokens. Light is the base; dark redefines only values, never components.
+   --------------------------------------------------------------------------- */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  color-scheme: light;
+
+  --paper: #edf1ea;
+  --surface: #fbfcfa;
+  --sunken: #e2e9dd;
+  --ink: #14231d;
+  --ink-soft: #4a5c53;
+  --ink-faint: #7d8c84;
+  --rule: #d3dccd;
+  --rule-strong: #b9c6b3;
+
+  --moss: #2f6b4f;
+  --moss-deep: #1f4c37;
+  --moss-wash: #dde8df;
+  --hivis: #c8e85c;
+  --on-hivis: #1a2b13;
+
+  --recycle: #2e6fb8;
+  --compost: #6b7b32;
+  --landfill: #64726a;
+  --dropoff: #cf6f1c;
+
+  --shadow-lift: 0 1px 2px rgb(20 35 29 / 0.06), 0 8px 24px -12px rgb(20 35 29 / 0.18);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --paper: #0d1512;
+    --surface: #16211c;
+    --sunken: #080e0b;
+    --ink: #e7efe6;
+    --ink-soft: #a3b3aa;
+    --ink-faint: #6f7f76;
+    --rule: #26332c;
+    --rule-strong: #38473f;
+
+    --moss: #74bb92;
+    --moss-deep: #a5d9ba;
+    --moss-wash: #172c21;
+    --hivis: #c8e85c;
+    --on-hivis: #16240f;
+
+    --recycle: #71aae8;
+    --compost: #a9bd5f;
+    --landfill: #93a29a;
+    --dropoff: #ea9a4e;
+
+    --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
   }
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --paper: #0d1512;
+  --surface: #16211c;
+  --sunken: #080e0b;
+  --ink: #e7efe6;
+  --ink-soft: #a3b3aa;
+  --ink-faint: #6f7f76;
+  --rule: #26332c;
+  --rule-strong: #38473f;
+
+  --moss: #74bb92;
+  --moss-deep: #a5d9ba;
+  --moss-wash: #172c21;
+  --hivis: #c8e85c;
+  --on-hivis: #16240f;
+
+  --recycle: #71aae8;
+  --compost: #a9bd5f;
+  --landfill: #93a29a;
+  --dropoff: #ea9a4e;
+
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--hivis);
+  color: var(--on-hivis);
+}
+
+:focus-visible {
+  outline: 2px solid var(--moss);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Typography
+   --------------------------------------------------------------------------- */
+
+.display {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 28, "WONK" 1;
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+}
+
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------
+   Layout
+   --------------------------------------------------------------------------- */
+
+.shell {
+  width: 100%;
+  max-width: 26rem;
+  margin-inline: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   Site header
+   --------------------------------------------------------------------------- */
+
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.masthead-inner {
+  max-width: 26rem;
+  margin-inline: auto;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.wordmark {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 40, "WONK" 1;
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.32rem;
+}
+
+.wordmark-dot {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--hivis);
+  flex: none;
+  translate: 0 -0.1rem;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.navlink {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  transition: color 0.15s ease;
+}
+
+.navlink:hover {
+  color: var(--ink);
+}
+
+.level-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.5rem 0.2rem 0.34rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.level-chip-mark {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 2px;
+  background: var(--moss);
+  flex: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Viewfinder — the page's dominant object
+   --------------------------------------------------------------------------- */
+
+.viewfinder {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--sunken);
+  box-shadow: var(--shadow-lift);
+}
+
+.viewfinder video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.viewfinder-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.viewfinder-empty p {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  max-width: 15rem;
+  line-height: 1.5;
+}
+
+/* Corner brackets: real camera vernacular, and they frame the subject. */
+.brackets {
+  position: absolute;
+  inset: 0.85rem;
+  pointer-events: none;
+}
+
+.brackets span {
+  position: absolute;
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 2px solid rgb(255 255 255 / 0.85);
+  mix-blend-mode: difference;
+}
+
+.brackets span:nth-child(1) {
+  top: 0;
+  left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: 5px;
+}
+.brackets span:nth-child(2) {
+  top: 0;
+  right: 0;
+  border-left: 0;
+  border-bottom: 0;
+  border-top-right-radius: 5px;
+}
+.brackets span:nth-child(3) {
+  bottom: 0;
+  left: 0;
+  border-right: 0;
+  border-top: 0;
+  border-bottom-left-radius: 5px;
+}
+.brackets span:nth-child(4) {
+  bottom: 0;
+  right: 0;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: 5px;
+}
+
+.viewfinder-tag {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  background: rgb(13 21 18 / 0.62);
+  backdrop-filter: blur(6px);
+  color: #eef3ec;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.live-dot {
+  width: 0.36rem;
+  height: 0.36rem;
+  border-radius: 50%;
+  background: var(--hivis);
+  flex: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Controls
+   --------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 650;
+  padding: 0.85rem 1.4rem;
+  border: 1px solid transparent;
+  transition:
+    transform 0.12s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+  cursor: pointer;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--moss-deep);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .btn-primary:hover:not(:disabled) {
+    background: var(--moss);
+    color: var(--sunken);
+  }
+}
+
+.btn-quiet {
+  background: transparent;
+  border-color: var(--rule-strong);
+  color: var(--ink);
+}
+
+.btn-quiet:hover:not(:disabled) {
+  border-color: var(--ink-soft);
+}
+
+.shutter {
+  position: relative;
+  flex: 1;
+}
+
+.shutter::after {
+  content: "";
+  position: absolute;
+  inset: 0.28rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Section rule with a label
+   --------------------------------------------------------------------------- */
+
+.rule-label {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.rule-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+/* ---------------------------------------------------------------------------
+   Meter — thin progress, not a card
+   --------------------------------------------------------------------------- */
+
+.meter {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.meter i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--moss);
+  transition: width 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.meter.is-done i {
+  background: var(--hivis);
+}
+
+/* ---------------------------------------------------------------------------
+   Quest link
+   --------------------------------------------------------------------------- */
+
+.quest-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 16px;
+  background: var(--surface);
+  transition:
+    border-color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.quest-link:hover {
+  border-color: var(--moss);
+  transform: translateY(-1px);
+}
+
+.quest-link-arrow {
+  color: var(--ink-faint);
+  transition: transform 0.15s ease;
+  flex: none;
+}
+
+.quest-link:hover .quest-link-arrow {
+  transform: translateX(3px);
+  color: var(--moss);
+}
+
+/* ---------------------------------------------------------------------------
+   Field: select + inputs
+   --------------------------------------------------------------------------- */
+
+.field {
+  width: 100%;
+  border: 1px solid var(--rule-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0.7rem 0.85rem;
+  font-size: 0.92rem;
+  font-family: inherit;
+}
+
+.field:focus {
+  border-color: var(--moss);
+}
+
+/* ---------------------------------------------------------------------------
+   Stream legend — introduces the colour language before first use
+   --------------------------------------------------------------------------- */
+
+.streams {
+  display: grid;
+  gap: 0;
+}
+
+.stream-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.62rem 0;
+  border-top: 1px solid var(--rule);
+}
+
+.stream-row:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+.stream-swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 3px;
+  flex: none;
+}
+
+.stream-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.stream-note {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  text-align: right;
+}
+
+/* ---------------------------------------------------------------------------
+   Verdict — the payoff. The word itself carries the design.
+   --------------------------------------------------------------------------- */
+
+.verdict {
+  --stream: var(--moss);
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--stream) 26%, var(--rule));
+  background: color-mix(in srgb, var(--stream) 7%, var(--surface));
+  padding: 1.5rem 1.35rem 1.35rem;
+  box-shadow: var(--shadow-lift);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.verdict[data-stream="recycle"] {
+  --stream: var(--recycle);
+}
+.verdict[data-stream="compost"] {
+  --stream: var(--compost);
+}
+.verdict[data-stream="trash"] {
+  --stream: var(--landfill);
+}
+.verdict[data-stream="special_dropoff"] {
+  --stream: var(--dropoff);
+}
+
+.verdict-word {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 34, "WONK" 1;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 13vw, 3.15rem);
+  line-height: 0.94;
+  letter-spacing: -0.03em;
+  color: var(--stream);
+  text-wrap: balance;
+}
+
+.verdict-item {
+  font-size: 0.95rem;
+  font-weight: 550;
+  color: var(--ink);
+}
+
+.verdict-reason {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  padding-top: 0.9rem;
+  border-top: 1px solid color-mix(in srgb, var(--stream) 18%, var(--rule));
+}
+
+.xp-tick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.xp-tick::before {
+  content: "";
+  width: 0.44rem;
+  height: 0.44rem;
+  border-radius: 50%;
+  background: var(--hivis);
+}
+
+.unsure {
+  border-radius: 14px;
+  background: var(--sunken);
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  border-radius: 999px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  padding: 0.34rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.chip:hover {
+  border-color: var(--moss);
+  color: var(--moss);
+}
+
+.celebrate {
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--hivis) 45%, var(--rule));
+  background: color-mix(in srgb, var(--hivis) 16%, var(--surface));
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Spinner
+   --------------------------------------------------------------------------- */
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 2px solid var(--rule);
+  border-top-color: var(--moss);
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fade-up {
+  animation: fadeUp 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }

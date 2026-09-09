@@ -20,7 +20,7 @@ function scaledSize(width: number, height: number): { width: number; height: num
 
 export default function CameraCapture({
   onCapture,
-  label = "📸 Scan Item",
+  label = "Scan item",
   disabled,
 }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -36,7 +36,7 @@ export default function CameraCapture({
 
     async function startCamera() {
       if (!navigator.mediaDevices?.getUserMedia) {
-        setCameraError("Camera not available in this browser — use upload instead.");
+        setCameraError("This browser can't open the camera. Upload a photo instead.");
         return;
       }
 
@@ -57,7 +57,7 @@ export default function CameraCapture({
           setCameraReady(true);
         }
       } catch {
-        setCameraError("Camera access denied — use upload instead.");
+        setCameraError("Camera access is blocked. Allow it in your browser, or upload a photo.");
       }
     }
 
@@ -90,7 +90,6 @@ export default function CameraCapture({
   const capturePhoto = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
-
     const dataUrl = drawToDataUrl(video, video.videoWidth, video.videoHeight);
     if (dataUrl) onCapture(dataUrl);
   }, [drawToDataUrl, onCapture]);
@@ -119,29 +118,48 @@ export default function CameraCapture({
   );
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full">
-      <div className="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden bg-black/90 flex items-center justify-center">
+    <div className="flex flex-col gap-4">
+      <div className="viewfinder">
         {!cameraError ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-          />
+          <>
+            <video ref={videoRef} autoPlay playsInline muted />
+            {!cameraReady && (
+              <div className="viewfinder-empty">
+                <span className="eyebrow">Starting camera</span>
+                <p>If your browser asks for permission, allow it — the photo never leaves your device unless you share it.</p>
+              </div>
+            )}
+          </>
         ) : (
-          <p className="text-white/80 text-sm text-center px-6">{cameraError}</p>
+          <div className="viewfinder-empty">
+            <span className="eyebrow">No camera</span>
+            <p>{cameraError}</p>
+          </div>
+        )}
+
+        <div className="brackets" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+
+        {cameraReady && !cameraError && (
+          <span className="viewfinder-tag">
+            <span className="live-dot" aria-hidden="true" />
+            Live
+          </span>
         )}
       </div>
 
       <canvas ref={canvasRef} className="hidden" />
 
-      <div className="flex gap-3 w-full max-w-sm">
+      <div className="flex gap-2.5">
         <button
           type="button"
           onClick={capturePhoto}
           disabled={disabled || !cameraReady}
-          className="flex-1 rounded-full bg-emerald-600 text-white font-medium py-3 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition"
+          className="btn btn-primary shutter"
         >
           {label}
         </button>
@@ -149,7 +167,7 @@ export default function CameraCapture({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled}
-          className="rounded-full border border-black/10 dark:border-white/20 px-4 py-3 text-sm font-medium disabled:opacity-40"
+          className="btn btn-quiet"
         >
           Upload
         </button>
