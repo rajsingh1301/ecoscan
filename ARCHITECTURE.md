@@ -223,8 +223,9 @@ ecoscan/
 
 ---
 
-## 11. Open Decisions (to confirm before coding)
+## 11. Decisions Made
 
-- Which Claude model to use for vision calls (cost vs. speed vs. accuracy tradeoff).
-- Which 3–5 demo regions/cities to hand-curate rules for.
-- Next.js (recommended, fastest to a working PWA + serverless API in one deploy) vs. plain React + separate backend.
+- **Framework:** Next.js (App Router) — chosen for one-deploy PWA + serverless API.
+- **Demo regions:** `default`, San Francisco, New York City, Delhi, Bengaluru (see `data/rules.json`). These are illustrative/hand-curated for the demo, not verified against current official municipal guidance — call this out in the pitch if asked.
+- **AI provider:** Claude Sonnet via **AWS Bedrock** (using available AWS credits, not the first-party Anthropic API). Integration is currently **mocked** in `lib/claude.ts` — swap-in point and Bedrock code sample are documented inline in that file, pending an AWS Bedrock key/role.
+- **State/storage:** No backend database. Location + scan history live in `localStorage` (see `lib/storage.ts`). Acceptable for a single-device hackathon demo; noted as a scope limit, not an oversight.

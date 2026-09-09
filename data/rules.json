@@ -1,0 +1,64 @@
+{
+  "regions": {
+    "default": {
+      "plastic_1_2": "recycle",
+      "plastic_3_7": "trash",
+      "glass": "recycle",
+      "metal": "recycle",
+      "paper_clean": "recycle",
+      "paper_greasy": "compost",
+      "organic": "compost",
+      "e_waste": "special_dropoff",
+      "hazardous": "special_dropoff",
+      "mixed_other": "trash"
+    },
+    "us-sf": {
+      "plastic_1_2": "recycle",
+      "plastic_3_7": "recycle",
+      "glass": "recycle",
+      "metal": "recycle",
+      "paper_clean": "recycle",
+      "paper_greasy": "compost",
+      "organic": "compost",
+      "e_waste": "special_dropoff",
+      "hazardous": "special_dropoff",
+      "mixed_other": "trash"
+    },
+    "us-nyc": {
+      "plastic_1_2": "recycle",
+      "plastic_3_7": "trash",
+      "glass": "recycle",
+      "metal": "recycle",
+      "paper_clean": "recycle",
+      "paper_greasy": "trash",
+      "organic": "compost",
+      "e_waste": "special_dropoff",
+      "hazardous": "special_dropoff",
+      "mixed_other": "trash"
+    },
+    "in-delhi": {
+      "plastic_1_2": "recycle",
+      "plastic_3_7": "trash",
+      "glass": "recycle",
+      "metal": "recycle",
+      "paper_clean": "recycle",
+      "paper_greasy": "trash",
+      "organic": "compost",
+      "e_waste": "special_dropoff",
+      "hazardous": "special_dropoff",
+      "mixed_other": "trash"
+    },
+    "in-bengaluru": {
+      "plastic_1_2": "recycle",
+      "plastic_3_7": "recycle",
+      "glass": "recycle",
+      "metal": "recycle",
+      "paper_clean": "recycle",
+      "paper_greasy": "compost",
+      "organic": "compost",
+      "e_waste": "special_dropoff",
+      "hazardous": "special_dropoff",
+      "mixed_other": "trash"
+    }
+  }
+}
