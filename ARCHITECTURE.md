@@ -267,5 +267,9 @@ ecoscan/
 
 - **Framework:** Next.js (App Router) — chosen for one-deploy PWA + serverless API.
 - **Demo regions:** `default`, San Francisco, New York City, Delhi, Bengaluru (see `data/rules.json`). These are illustrative/hand-curated for the demo, not verified against current official municipal guidance — call this out in the pitch if asked.
-- **AI provider:** **Google Gemini (`gemini-2.5-flash`)** is live in `lib/claude.ts` — chosen because it has a real free tier with vision support, unblocking development. Claude Sonnet via AWS Bedrock was the original plan but is on hold: the AWS account needs a valid payment instrument attached before Bedrock model access activates (AWS Marketplace requirement, applies even with free credits) — see the comment block at the top of `lib/claude.ts` for the exact swap-back steps once that's resolved.
+- **AI capacity:** the Gemini free tier meters requests **per day per model**, and a single day of
+  testing exhausted one model completely — every AI feature failed in production at once. `lib/claude.ts`
+  therefore calls a **chain of four models**, falling through on 429/5xx, so the daily budget is the sum
+  of four quotas rather than one. This is the difference between the app surviving judging day and not.
+- **AI provider:** **Google Gemini** is live in `lib/claude.ts` — chosen because it has a real free tier with vision support, unblocking development. Claude Sonnet via AWS Bedrock was the original plan but is on hold: the AWS account needs a valid payment instrument attached before Bedrock model access activates (AWS Marketplace requirement, applies even with free credits) — see the comment block at the top of `lib/claude.ts` for the exact swap-back steps once that's resolved.
 - **State/storage:** No backend database. Location + scan history live in `localStorage` (see `lib/storage.ts`). Acceptable for a single-device hackathon demo; noted as a scope limit, not an oversight.
