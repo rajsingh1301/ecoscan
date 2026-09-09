@@ -5,7 +5,7 @@ import CameraCapture from "@/components/CameraCapture";
 import LocationPicker from "@/components/LocationPicker";
 import ShareToCommunity from "@/components/ShareToCommunity";
 import { addCleanupRecord, getCleanups, getHistory, getLocation, getStreakDays } from "@/lib/storage";
-import { BADGES, getUnlockedBadgeIds } from "@/lib/gamification";
+import { BADGES, CLEANUP_FULL_BONUS, getUnlockedBadgeIds } from "@/lib/gamification";
 import type { Badge } from "@/lib/gamification";
 import type { CleanupVerification, SceneScanResult, UserLocation } from "@/lib/types";
 
@@ -154,11 +154,13 @@ export default function CleanupPage() {
 
   if (screen === "needs-location") {
     return (
-      <div className="flex flex-col items-center gap-6 w-full">
-        <div className="text-center max-w-sm">
-          <h1 className="text-xl font-bold mb-2">Set your location first 📍</h1>
-          <p className="text-sm text-black/60 dark:text-white/60">
-            Cleanup scoring uses your local disposal rules.
+      <div className="shell flex flex-col gap-7 fade-up">
+        <div className="flex flex-col gap-3">
+          <span className="eyebrow">One thing first</span>
+          <h1 className="display text-[2rem]">Where are you cleaning?</h1>
+          <p className="text-[0.95rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+            Cleanup scoring uses your local disposal rules to work out what can
+            be recovered and what can&apos;t.
           </p>
         </div>
         <LocationPicker
@@ -173,37 +175,35 @@ export default function CleanupPage() {
 
   if (screen === "intro") {
     return (
-      <div className="flex flex-col items-center gap-6 w-full max-w-sm text-center">
-        <div className="text-5xl">🧹</div>
-        <div>
-          <h1 className="text-2xl font-bold mb-2">Cleanup Quest</h1>
-          <p className="text-sm text-black/60 dark:text-white/60">
-            Find a littered spot, scan it, clean it up — then prove it. The AI compares your
-            before and after photos and only awards XP for litter you actually removed.
+      <div className="shell flex flex-col gap-7 fade-up">
+        <div className="flex flex-col gap-3">
+          <span className="eyebrow">Cleanup Quest</span>
+          <h1 className="display text-[2.1rem]">Anyone can say they cleaned up.</h1>
+          <p className="text-[0.95rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+            Photograph a littered spot and the AI counts every piece. Clear it,
+            photograph it again, and it awards XP only for what genuinely went
+            away — checked against your first photo.
           </p>
         </div>
 
-        <ol className="text-left text-sm flex flex-col gap-3 w-full">
-          <li className="flex gap-3">
-            <span className="font-bold text-emerald-600">1.</span>
-            <span>Photograph a littered area — AI counts every piece of litter</span>
-          </li>
-          <li className="flex gap-3">
-            <span className="font-bold text-emerald-600">2.</span>
-            <span>Clean it up and dispose of everything properly</span>
-          </li>
-          <li className="flex gap-3">
-            <span className="font-bold text-emerald-600">3.</span>
-            <span>Photograph the same spot again to earn verified XP</span>
-          </li>
-        </ol>
+        <div className="steps">
+          <div className="step">
+            <p>Photograph the mess — every piece of litter gets counted</p>
+          </div>
+          <div className="step">
+            <p>Clear it, and dispose of everything properly</p>
+          </div>
+          <div className="step">
+            <p>Photograph the same spot to claim verified XP</p>
+          </div>
+        </div>
 
         <button
           type="button"
           onClick={() => setScreen("before-capture")}
-          className="w-full rounded-full bg-emerald-600 text-white font-medium py-3 active:scale-95 transition"
+          className="btn btn-primary"
         >
-          Start a Quest
+          Start a quest
         </button>
       </div>
     );
@@ -211,24 +211,27 @@ export default function CleanupPage() {
 
   if (screen === "before-capture") {
     return (
-      <div className="flex flex-col items-center gap-4 w-full">
-        <div className="text-center max-w-sm">
-          <p className="font-semibold">Step 1 — Before</p>
-          <p className="text-sm text-black/60 dark:text-white/60">
-            Frame the littered area so all the litter is visible.
+      <div className="shell flex flex-col gap-5 fade-up">
+        <div className="flex flex-col gap-1.5">
+          <span className="eyebrow">Step 1 · Before</span>
+          <h1 className="display text-[1.7rem]">Frame the whole mess.</h1>
+          <p className="text-[0.88rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+            Anything outside the shot won&apos;t be counted — and won&apos;t earn XP later.
           </p>
         </div>
-        <CameraCapture onCapture={handleBeforeCapture} label="📸 Scan the area" />
+        <CameraCapture onCapture={handleBeforeCapture} label="Scan the area" />
       </div>
     );
   }
 
   if (screen === "scanning" || screen === "verifying") {
     return (
-      <div className="flex flex-col items-center gap-4 mt-16">
-        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-black/60 dark:text-white/60">
-          {screen === "scanning" ? "Analyzing the scene…" : "Verifying your cleanup…"}
+      <div className="shell flex flex-col items-center gap-4 pt-24 text-center">
+        <div className="spinner" />
+        <p className="text-[0.9rem]" style={{ color: "var(--ink-soft)" }}>
+          {screen === "scanning"
+            ? "Counting what's there…"
+            : "Comparing your two photos…"}
         </p>
       </div>
     );
@@ -236,17 +239,15 @@ export default function CleanupPage() {
 
   if (screen === "empty-scene") {
     return (
-      <div className="flex flex-col items-center gap-4 mt-12 text-center max-w-sm">
-        <div className="text-5xl">✨</div>
-        <h2 className="text-xl font-bold">Nothing to clean here!</h2>
-        <p className="text-sm text-black/60 dark:text-white/60">
-          {scene?.note ?? "No litter was detected in this scene."}
-        </p>
-        <button
-          type="button"
-          onClick={resetQuest}
-          className="rounded-full bg-emerald-600 text-white font-medium px-6 py-3"
-        >
+      <div className="shell flex flex-col gap-5 pt-10 fade-up">
+        <div className="flex flex-col gap-2">
+          <span className="eyebrow">Nothing found</span>
+          <h1 className="display text-[2rem]">This spot is already clean.</h1>
+          <p className="text-[0.9rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+            {scene?.note ?? "No litter was detected in this scene."}
+          </p>
+        </div>
+        <button type="button" onClick={resetQuest} className="btn btn-primary">
           Try another spot
         </button>
       </div>
@@ -255,47 +256,57 @@ export default function CleanupPage() {
 
   if (screen === "quest-active" && scene) {
     return (
-      <div className="flex flex-col items-center gap-4 w-full max-w-sm">
-        <div className="w-full rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950 p-5 flex flex-col gap-3">
-          <div className="flex items-baseline justify-between">
-            <p className="font-bold text-lg">{scene.totalItems} items detected</p>
-            <p className="text-emerald-700 dark:text-emerald-300 font-bold">
-              {scene.availableXp} XP
+      <div className="shell flex flex-col gap-5 fade-up">
+        <div className="tally">
+          <div className="flex flex-col gap-1">
+            <span className="eyebrow">Detected</span>
+            <p className="tally-figure">
+              {scene.totalItems}
+              <span className="text-[1rem] font-normal" style={{ color: "var(--ink-faint)" }}>
+                {" "}
+                {scene.totalItems === 1 ? "piece" : "pieces"}
+              </span>
             </p>
           </div>
 
-          <p className="text-sm text-black/60 dark:text-white/60">{scene.note}</p>
-
-          <div className="flex gap-3 text-sm">
-            <span>♻️ {scene.recyclableCount} recoverable</span>
-            <span>🗑️ {scene.landfillCount} landfill</span>
+          <div className="tally-split">
+            <span>
+              <b>{scene.recyclableCount}</b> recoverable
+            </span>
+            <span>
+              <b>{scene.landfillCount}</b> landfill
+            </span>
           </div>
 
-          <ul className="flex flex-col gap-1 border-t border-black/10 dark:border-white/10 pt-3">
+          <div className="item-list">
             {scene.items.map((item, index) => (
-              <li key={`${item.itemName}-${index}`} className="flex justify-between text-sm">
+              <div key={`${item.itemName}-${index}`} className="item-line">
                 <span>{item.itemName}</span>
-                <span className="font-medium">×{item.count}</span>
-              </li>
+                <span>×{item.count}</span>
+              </div>
             ))}
-          </ul>
+          </div>
+
+          <span className="xp-available">{scene.availableXp} XP on the table</span>
         </div>
 
-        <p className="text-sm text-center text-black/60 dark:text-white/60">
-          Now clean it up — then photograph the same spot to claim your XP.
+        <p className="text-[0.9rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+          Clear it, then photograph the same spot. XP is awarded only for what
+          actually leaves the frame.
         </p>
 
         <button
           type="button"
           onClick={() => setScreen("after-capture")}
-          className="w-full rounded-full bg-emerald-600 text-white font-medium py-3 active:scale-95 transition"
+          className="btn btn-primary"
         >
-          I&apos;ve cleaned it — verify
+          I&apos;ve cleaned it
         </button>
         <button
           type="button"
           onClick={resetQuest}
-          className="text-sm text-black/40 dark:text-white/40 underline"
+          className="text-[0.82rem] underline underline-offset-2 self-center"
+          style={{ color: "var(--ink-faint)" }}
         >
           Abandon quest
         </button>
@@ -305,27 +316,28 @@ export default function CleanupPage() {
 
   if (screen === "after-capture") {
     return (
-      <div className="flex flex-col items-center gap-4 w-full">
-        <div className="text-center max-w-sm">
-          <p className="font-semibold">Step 3 — After</p>
-          <p className="text-sm text-black/60 dark:text-white/60">
-            Photograph the same spot from roughly the same angle.
+      <div className="shell flex flex-col gap-5 fade-up">
+        <div className="flex flex-col gap-1.5">
+          <span className="eyebrow">Step 3 · After</span>
+          <h1 className="display text-[1.7rem]">Same spot, same angle.</h1>
+          <p className="text-[0.88rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+            The closer the framing matches your first photo, the more confidently
+            it can credit what you removed.
           </p>
         </div>
-        <CameraCapture onCapture={handleAfterCapture} label="📸 Verify cleanup" />
+        <CameraCapture onCapture={handleAfterCapture} label="Verify cleanup" />
       </div>
     );
   }
 
   if (screen === "error") {
     return (
-      <div className="flex flex-col items-center gap-4 mt-16 text-center">
-        <p className="text-sm text-red-600">{errorMessage}</p>
-        <button
-          type="button"
-          onClick={resetQuest}
-          className="rounded-full bg-emerald-600 text-white font-medium px-6 py-3"
-        >
+      <div className="shell flex flex-col items-center gap-5 pt-24 text-center fade-up">
+        <span className="eyebrow">Didn&apos;t work</span>
+        <p className="text-[0.95rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+          {errorMessage}
+        </p>
+        <button type="button" onClick={resetQuest} className="btn btn-primary">
           Start over
         </button>
       </div>
@@ -336,52 +348,67 @@ export default function CleanupPage() {
     const failed = !verification.sameLocation;
 
     return (
-      <div className="flex flex-col items-center gap-4 w-full max-w-sm">
-        <div
-          className={`w-full rounded-2xl border-2 p-6 flex flex-col gap-3 ${
-            failed
-              ? "border-orange-500 bg-orange-50 dark:bg-orange-950"
-              : "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
-          }`}
-        >
+      <div className="shell flex flex-col gap-4 fade-up">
+        <article className="outcome" data-state={failed ? "rejected" : "verified"}>
           {failed ? (
             <>
-              <p className="text-2xl font-bold">⚠️ Couldn&apos;t verify</p>
-              <p className="text-sm">
-                The after photo doesn&apos;t appear to show the same place as the before photo, so
-                no XP was awarded.
+              <div className="flex flex-col gap-1.5">
+                <span className="eyebrow">No XP awarded</span>
+                <h1 className="outcome-headline">This isn&apos;t the same place.</h1>
+              </div>
+              <p className="text-[0.9rem] leading-relaxed">
+                The second photo doesn&apos;t match the spot you scanned, so the
+                cleanup couldn&apos;t be credited.
               </p>
             </>
           ) : (
             <>
-              <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">
-                {verification.fullCleanup ? "✨ Spotless!" : "✅ Verified"}
-              </p>
-              <p className="text-sm">
-                {verification.itemsRemoved} of {verification.totalItems} items removed
-                {verification.itemsRemaining > 0 && ` · ${verification.itemsRemaining} still there`}
-              </p>
-              <p className="text-2xl font-bold">+{verification.xpEarned} XP</p>
+              <div className="flex flex-col gap-1.5">
+                <span className="eyebrow">
+                  {verification.fullCleanup ? "Every piece gone" : "Verified"}
+                </span>
+                <h1 className="outcome-headline">+{verification.xpEarned} XP</h1>
+              </div>
+
+              <div className="score-line">
+                <span style={{ color: "var(--ink-soft)" }}>Removed</span>
+                <b>
+                  {verification.itemsRemoved} of {verification.totalItems}
+                </b>
+              </div>
+
+              {verification.itemsRemaining > 0 && (
+                <div className="score-line">
+                  <span style={{ color: "var(--ink-soft)" }}>Still there</span>
+                  <b>{verification.itemsRemaining}</b>
+                </div>
+              )}
+
               {verification.fullCleanup && (
-                <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                  Includes a full-cleanup bonus 🎉
-                </p>
+                <div className="score-line">
+                  <span style={{ color: "var(--ink-soft)" }}>Full-cleanup bonus</span>
+                  <b>+{CLEANUP_FULL_BONUS}</b>
+                </div>
               )}
             </>
           )}
 
-          <p className="text-xs text-black/50 dark:text-white/50 border-t border-black/10 dark:border-white/10 pt-3">
+          <p className="outcome-note">
             {verification.notes}
-            {verification.confidence === "low" && " (assessed with low confidence)"}
+            {verification.confidence === "low" && " Assessed with low confidence."}
           </p>
-        </div>
+        </article>
 
         {newBadges.length > 0 && (
-          <div className="w-full rounded-lg bg-amber-100 dark:bg-amber-900 border border-amber-400 p-3 flex flex-col gap-1">
-            <p className="text-sm font-bold">🎉 New Badge Unlocked!</p>
+          <div className="celebrate">
+            <span className="eyebrow">Badge unlocked</span>
             {newBadges.map((badge) => (
-              <p key={badge.id} className="text-sm">
-                {badge.emoji} {badge.name} — {badge.description}
+              <p key={badge.id} className="text-[0.9rem] font-semibold">
+                {badge.name}
+                <span className="font-normal" style={{ color: "var(--ink-soft)" }}>
+                  {" "}
+                  — {badge.description.toLowerCase()}
+                </span>
               </p>
             ))}
           </div>
@@ -389,7 +416,7 @@ export default function CleanupPage() {
 
         {!failed && beforeImage && afterImage && (
           <ShareToCommunity
-            prompt="Show your work to the community 🌍"
+            prompt="Show the community what you did"
             post={{
               type: "cleanup",
               beforeImage,
@@ -400,11 +427,7 @@ export default function CleanupPage() {
           />
         )}
 
-        <button
-          type="button"
-          onClick={resetQuest}
-          className="w-full rounded-full bg-emerald-600 text-white font-medium py-3 active:scale-95 transition"
-        >
+        <button type="button" onClick={resetQuest} className="btn btn-quiet">
           Start another quest
         </button>
       </div>

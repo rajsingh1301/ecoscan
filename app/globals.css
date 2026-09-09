@@ -667,6 +667,165 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+   Cleanup Quest
+   --------------------------------------------------------------------------- */
+
+/* The three steps are a real sequence, so they are numbered. */
+.steps {
+  display: grid;
+  gap: 0;
+  counter-reset: step;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  gap: 0.85rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--rule);
+  counter-increment: step;
+}
+
+.step:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+.step::before {
+  content: counter(step);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  padding-top: 0.15rem;
+}
+
+.step p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Tally — the detected-litter count, the quest's headline figure */
+.tally {
+  border-radius: 20px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  padding: 1.3rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: var(--shadow-lift);
+}
+
+.tally-figure {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 34, "WONK" 1;
+  font-weight: 700;
+  font-size: 3.1rem;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tally-split {
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.tally-split b {
+  color: var(--ink);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.item-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--rule);
+}
+
+.item-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0;
+  font-size: 0.86rem;
+}
+
+.item-line + .item-line {
+  border-top: 1px solid var(--rule);
+}
+
+.item-line span:last-child {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+  font-weight: 600;
+}
+
+.xp-available {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--moss);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Outcome — verified or not */
+.outcome {
+  --tone: var(--moss);
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--tone) 30%, var(--rule));
+  background: color-mix(in srgb, var(--tone) 8%, var(--surface));
+  padding: 1.5rem 1.35rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  box-shadow: var(--shadow-lift);
+}
+
+.outcome[data-state="rejected"] {
+  --tone: var(--dropoff);
+}
+
+.outcome-headline {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 34, "WONK" 1;
+  font-weight: 700;
+  font-size: 2.3rem;
+  line-height: 0.98;
+  letter-spacing: -0.028em;
+  color: var(--tone);
+  text-wrap: balance;
+}
+
+.outcome-note {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  padding-top: 0.85rem;
+  border-top: 1px solid color-mix(in srgb, var(--tone) 20%, var(--rule));
+}
+
+.score-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.score-line b {
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+/* ---------------------------------------------------------------------------
    Spinner
    --------------------------------------------------------------------------- */
 
