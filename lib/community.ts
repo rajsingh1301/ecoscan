@@ -39,17 +39,23 @@ export async function verifyEmailOtp(
 ): Promise<{ ok: boolean; user?: User; error?: string }> {
   const supabase = createClient();
 
-  const { data, error } = await supabase.auth.verifyOtp({
-    email: email.trim(),
-    token: token.trim(),
-    type: "email",
-  });
+  // A first-time address gets a signup-type token and a returning one gets an
+  // email-type token, and the client cannot tell which it is holding.
+  const types = ["email", "signup"] as const;
+  let lastError = "That code didn't work. Please try again.";
 
-  if (error || !data.user) {
-    return { ok: false, error: error?.message ?? "That code didn't work. Please try again." };
+  for (const type of types) {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: token.trim(),
+      type,
+    });
+
+    if (!error && data.user) return { ok: true, user: data.user };
+    if (error) lastError = error.message;
   }
 
-  return { ok: true, user: data.user };
+  return { ok: false, error: lastError };
 }
 
 export async function getProfile(userId: string): Promise<Profile | null> {

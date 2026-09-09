@@ -13,6 +13,11 @@ import { getLocation } from "@/lib/storage";
 
 type Step = "email" | "otp" | "profile";
 
+// Supabase's OTP length is a project setting (6 by default, 8 here), so accept
+// a range rather than pinning the input to one length.
+const MIN_CODE_LENGTH = 6;
+const MAX_CODE_LENGTH = 10;
+
 interface JoinCommunityProps {
   prompt?: string;
   onJoined: () => void;
@@ -46,7 +51,7 @@ export default function JoinCommunity({
     setBusy(false);
 
     if (result.ok) {
-      setNotice(`We sent a 6-digit code to ${trimmed}`);
+      setNotice(`We sent a code to ${trimmed}`);
       setStep("otp");
     } else {
       setError(result.error ?? "Could not send the code.");
@@ -54,8 +59,8 @@ export default function JoinCommunity({
   }
 
   async function handleVerify() {
-    if (code.trim().length < 6) {
-      setError("Enter the 6-digit code from your email.");
+    if (code.trim().length < MIN_CODE_LENGTH) {
+      setError("Enter the code from your email.");
       return;
     }
 
@@ -127,7 +132,7 @@ export default function JoinCommunity({
             {busy ? "Sending code…" : "Send me a code"}
           </button>
           <p className="text-[11px] text-black/40 dark:text-white/40 text-center">
-            No password. We email you a 6-digit code to sign in.
+            No password. We email you a code to sign in.
           </p>
         </>
       )}
@@ -139,9 +144,9 @@ export default function JoinCommunity({
             inputMode="numeric"
             autoComplete="one-time-code"
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            placeholder="123456"
-            className="w-full rounded-lg border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-center text-lg tracking-[0.4em] font-mono"
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, MAX_CODE_LENGTH))}
+            placeholder="Enter code"
+            className="w-full rounded-lg border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-center text-lg tracking-[0.3em] font-mono"
           />
           <button
             type="button"
