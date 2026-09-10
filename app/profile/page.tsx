@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import JoinCommunity from "@/components/JoinCommunity";
 import LocationPicker from "@/components/LocationPicker";
+import Avatar from "@/components/Avatar";
 import LevelBar from "@/components/LevelBar";
 import DailyChallengeCard from "@/components/DailyChallengeCard";
 import BadgeGrid from "@/components/BadgeGrid";
@@ -115,12 +116,28 @@ export default function ProfilePage() {
       </div>
 
       {/* Identity */}
+      {authState !== "signed-in" && (
+        <div className="identity">
+          <Avatar seed="guest" emoji="🌱" size="lg" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[1rem] font-semibold">Guest</p>
+            <p className="text-[0.8rem]" style={{ color: "var(--ink-faint)" }}>
+              Progress saved on this device
+            </p>
+          </div>
+        </div>
+      )}
+
       {authState === "signed-in" && user && (
         <section className="flex flex-col gap-3.5">
           {!editing ? (
             <>
               <div className="identity">
-                <span className="identity-avatar">{profile?.avatar_emoji ?? "🌱"}</span>
+                <Avatar
+                  seed={profile?.username ?? user.id}
+                  emoji={profile?.avatar_emoji ?? "🌱"}
+                  size="lg"
+                />
                 <div className="min-w-0 flex-1">
                   <p className="text-[1rem] font-semibold truncate">
                     {profile?.username ?? "Your account"}
@@ -141,6 +158,12 @@ export default function ProfilePage() {
             </>
           ) : (
             <div className="flex flex-col gap-3">
+              <div className="identity">
+                <Avatar seed={draftName || "preview"} emoji={draftAvatar} size="lg" />
+                <p className="text-[0.82rem]" style={{ color: "var(--ink-faint)" }}>
+                  Your colour comes from your name — pick a symbol below.
+                </p>
+              </div>
               <div className="avatar-picker">
                 {AVATAR_CHOICES.map((emoji) => (
                   <button

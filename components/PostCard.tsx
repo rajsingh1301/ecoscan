@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState } from "react";
+import Avatar from "@/components/Avatar";
 import { BADGES, LEVELS } from "@/lib/gamification";
 import { DEMO_REGIONS } from "@/lib/rulesEngine";
 import type { FeedPost } from "@/lib/types";
@@ -44,7 +45,7 @@ export default function PostCard({ post, reacted, canReact, onToggleReaction }: 
   return (
     <article className="w-full rounded-2xl border border-black/10 dark:border-white/15 overflow-hidden">
       <header className="flex items-center gap-3 px-4 py-3">
-        <span className="text-2xl">{post.avatar_emoji}</span>
+        <Avatar seed={post.username} emoji={post.avatar_emoji} size="sm" />
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-sm truncate">{post.username}</p>
           <p className="text-xs text-black/50 dark:text-white/50">
