@@ -6,6 +6,7 @@ import LocationPicker from "@/components/LocationPicker";
 import ShareToCommunity from "@/components/ShareToCommunity";
 import { addCleanupRecord, getCleanups, getHistory, getLocation, getStreakDays } from "@/lib/storage";
 import { BADGES, CLEANUP_FULL_BONUS, getUnlockedBadgeIds } from "@/lib/gamification";
+import { pushCleanup } from "@/lib/sync";
 import type { Badge } from "@/lib/gamification";
 import type { CleanupVerification, SceneScanResult, UserLocation } from "@/lib/types";
 
@@ -124,14 +125,16 @@ export default function CleanupPage() {
           cleanups: getCleanups(),
         });
 
-        addCleanupRecord({
+        const record = {
           id: crypto.randomUUID(),
           timestamp: new Date().toISOString(),
           totalItemsBefore: data.totalItems,
           itemsRemoved: data.itemsRemoved,
           xpEarned: data.xpEarned,
           ...(coords ? { lat: coords.lat, lng: coords.lng } : {}),
-        });
+        };
+        addCleanupRecord(record);
+        void pushCleanup(record).catch(() => {});
 
         const badgesAfter = getUnlockedBadgeIds({
           history: historyNow,

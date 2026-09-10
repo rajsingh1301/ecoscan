@@ -8,6 +8,7 @@ import VerdictCard from "@/components/VerdictCard";
 import DailyChallengeCard from "@/components/DailyChallengeCard";
 import ShareToCommunity from "@/components/ShareToCommunity";
 import { addScanRecord, getCleanups, getHistory, getLocation, getStreakDays } from "@/lib/storage";
+import { pushScan } from "@/lib/sync";
 import { getReasonForVerdict } from "@/lib/rulesEngine";
 import { BADGES, XP_TABLE, getUnlockedBadgeIds } from "@/lib/gamification";
 import type { Badge } from "@/lib/gamification";
@@ -78,14 +79,16 @@ export default function ScanPage() {
         cleanups,
       });
 
-      addScanRecord({
+      const record = {
         id,
         timestamp: new Date().toISOString(),
         itemName: data.itemName,
         materialCategory: data.materialCategory,
         verdict: data.verdict,
         confidence: data.confidence,
-      });
+      };
+      addScanRecord(record);
+      void pushScan(record).catch(() => {});
 
       const historyAfter = getHistory();
       const badgesAfter = getUnlockedBadgeIds({
@@ -117,14 +120,16 @@ export default function ScanPage() {
     setXpGained(XP_TABLE[newVerdict]);
 
     if (scanId) {
-      addScanRecord({
+      const corrected = {
         id: scanId,
         timestamp: new Date().toISOString(),
         itemName: updated.itemName,
         materialCategory: updated.materialCategory,
         verdict: newVerdict,
         confidence: updated.confidence,
-      });
+      };
+      addScanRecord(corrected);
+      void pushScan(corrected).catch(() => {});
     }
   }
 

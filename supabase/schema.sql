@@ -38,6 +38,38 @@ create table if not exists public.posts (
 create index if not exists posts_created_at_idx on public.posts (created_at desc);
 create index if not exists posts_city_idx on public.posts (city, created_at desc);
 
+-- Personal progress. Unlike posts, these are private to their owner: the app
+-- works signed-out against localStorage, and these tables make that same
+-- progress durable and portable once an account exists.
+
+create table if not exists public.scans (
+  id uuid primary key,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  item_name text not null,
+  material_category text not null,
+  verdict text not null,
+  confidence text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists scans_user_idx on public.scans (user_id, created_at desc);
+
+create table if not exists public.cleanups (
+  id uuid primary key,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  total_items_before int not null,
+  items_removed int not null,
+  xp_earned int not null,
+  lat double precision,
+  lng double precision,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists cleanups_user_idx on public.cleanups (user_id, created_at desc);
+
+alter table public.profiles
+  add column if not exists total_xp int not null default 0;
+
 create table if not exists public.reactions (
   post_id uuid not null references public.posts(id) on delete cascade,
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -79,6 +111,42 @@ create policy "users insert their own posts"
 drop policy if exists "users delete their own posts" on public.posts;
 create policy "users delete their own posts"
   on public.posts for delete using (auth.uid() = user_id);
+
+-- Progress is private: only its owner may read it, unlike the public feed.
+alter table public.scans enable row level security;
+alter table public.cleanups enable row level security;
+
+drop policy if exists "users read their own scans" on public.scans;
+create policy "users read their own scans"
+  on public.scans for select using (auth.uid() = user_id);
+
+drop policy if exists "users write their own scans" on public.scans;
+create policy "users write their own scans"
+  on public.scans for insert with check (auth.uid() = user_id);
+
+drop policy if exists "users update their own scans" on public.scans;
+create policy "users update their own scans"
+  on public.scans for update using (auth.uid() = user_id);
+
+drop policy if exists "users delete their own scans" on public.scans;
+create policy "users delete their own scans"
+  on public.scans for delete using (auth.uid() = user_id);
+
+drop policy if exists "users read their own cleanups" on public.cleanups;
+create policy "users read their own cleanups"
+  on public.cleanups for select using (auth.uid() = user_id);
+
+drop policy if exists "users write their own cleanups" on public.cleanups;
+create policy "users write their own cleanups"
+  on public.cleanups for insert with check (auth.uid() = user_id);
+
+drop policy if exists "users update their own cleanups" on public.cleanups;
+create policy "users update their own cleanups"
+  on public.cleanups for update using (auth.uid() = user_id);
+
+drop policy if exists "users delete their own cleanups" on public.cleanups;
+create policy "users delete their own cleanups"
+  on public.cleanups for delete using (auth.uid() = user_id);
 
 drop policy if exists "reactions are readable by everyone" on public.reactions;
 create policy "reactions are readable by everyone"

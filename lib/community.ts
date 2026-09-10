@@ -9,6 +9,7 @@ export interface Profile {
   username: string;
   avatar_emoji: string;
   city: string | null;
+  total_xp?: number;
 }
 
 export async function getCurrentUser(): Promise<User | null> {

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Figtree } from "next/font/google";
 import Link from "next/link";
 import HeaderXpBadge from "@/components/HeaderXpBadge";
+import ProgressSync from "@/components/ProgressSync";
 import "./globals.css";
 
 const display = Fraunces({
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable} h-full`}>
       <body className="min-h-full flex flex-col">
+        <ProgressSync />
         <header className="masthead">
           <div className="masthead-inner">
             <Link href="/" className="wordmark">

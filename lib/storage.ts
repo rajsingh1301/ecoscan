@@ -43,6 +43,16 @@ export function addScanRecord(record: ScanRecord): void {
   window.localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 200)));
 }
 
+export function replaceHistory(records: ScanRecord[]): void {
+  if (!isBrowser()) return;
+  window.localStorage.setItem(HISTORY_KEY, JSON.stringify(records.slice(0, 500)));
+}
+
+export function replaceCleanups(records: CleanupRecord[]): void {
+  if (!isBrowser()) return;
+  window.localStorage.setItem(CLEANUPS_KEY, JSON.stringify(records.slice(0, 500)));
+}
+
 export function clearHistory(): void {
   if (!isBrowser()) return;
   window.localStorage.removeItem(HISTORY_KEY);
