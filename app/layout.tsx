@@ -49,6 +49,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Link href="/history" className="navlink">
                 Impact
               </Link>
+              <Link href="/profile" className="navlink">
+                You
+              </Link>
               <HeaderXpBadge />
             </nav>
           </div>

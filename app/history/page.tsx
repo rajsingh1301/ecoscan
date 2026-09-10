@@ -2,7 +2,6 @@ import ImpactDashboard from "@/components/ImpactDashboard";
 import LevelBar from "@/components/LevelBar";
 import DailyChallengeCard from "@/components/DailyChallengeCard";
 import BadgeGrid from "@/components/BadgeGrid";
-import AccountPanel from "@/components/AccountPanel";
 
 export default function HistoryPage() {
   return (
@@ -15,7 +14,6 @@ export default function HistoryPage() {
       <DailyChallengeCard />
       <BadgeGrid />
       <ImpactDashboard />
-      <AccountPanel />
     </div>
   );
 }

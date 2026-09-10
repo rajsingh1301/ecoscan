@@ -69,6 +69,16 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return (data as Profile | null) ?? null;
 }
 
+export async function updateProfile(
+  userId: string,
+  changes: { username?: string; avatar_emoji?: string; city?: string }
+): Promise<{ ok: boolean; error?: string }> {
+  const supabase = createClient();
+  const { error } = await supabase.from("profiles").update(changes).eq("id", userId);
+  if (error) return { ok: false, error: "Could not save your profile. Please try again." };
+  return { ok: true };
+}
+
 export async function createProfile(
   user: User,
   username: string,

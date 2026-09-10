@@ -192,7 +192,7 @@ export default function ScanPage() {
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">{location?.label}</span>
             <Link
-              href="/settings"
+              href="/profile"
               className="eyebrow underline underline-offset-2"
               style={{ color: "var(--ink-faint)" }}
             >
