@@ -22,29 +22,28 @@ export default function BadgeGrid() {
   if (unlocked === null) return null;
 
   return (
-    <div className="w-full">
-      <p className="text-sm font-medium mb-2">
-        Badges ({unlocked.size}/{BADGES.length})
-      </p>
-      <div className="grid grid-cols-3 gap-2">
+    <section className="flex flex-col gap-2.5">
+      <div className="rule-label">
+        <span className="eyebrow">
+          Badges · {unlocked.size} of {BADGES.length}
+        </span>
+      </div>
+
+      <div className="badge-grid">
         {BADGES.map((badge) => {
           const isUnlocked = unlocked.has(badge.id);
           return (
             <div
               key={badge.id}
+              className={`badge${isUnlocked ? " is-unlocked" : ""}`}
               title={badge.description}
-              className={`flex flex-col items-center gap-1 rounded-xl border p-3 text-center ${
-                isUnlocked
-                  ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
-                  : "border-black/10 dark:border-white/10 opacity-40 grayscale"
-              }`}
             >
-              <span className="text-2xl">{badge.emoji}</span>
-              <span className="text-[11px] font-medium leading-tight">{badge.name}</span>
+              <span className="badge-mark">{badge.emoji}</span>
+              <span className="badge-name">{badge.name}</span>
             </div>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }

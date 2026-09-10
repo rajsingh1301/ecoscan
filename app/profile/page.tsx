@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import JoinCommunity from "@/components/JoinCommunity";
 import LocationPicker from "@/components/LocationPicker";
+import LevelBar from "@/components/LevelBar";
+import DailyChallengeCard from "@/components/DailyChallengeCard";
+import BadgeGrid from "@/components/BadgeGrid";
+import ImpactDashboard from "@/components/ImpactDashboard";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import {
   AVATAR_CHOICES,
@@ -15,7 +19,7 @@ import {
 } from "@/lib/community";
 import { syncProgress } from "@/lib/sync";
 import { getCleanups, getHistory, getLocation, getStreakDays } from "@/lib/storage";
-import { BADGES, computeTotalXp, getLevelProgress, getUnlockedBadgeIds } from "@/lib/gamification";
+import { BADGES, computeTotalXp, getUnlockedBadgeIds } from "@/lib/gamification";
 import type { CleanupRecord, ScanRecord, UserLocation } from "@/lib/types";
 
 type AuthState = "checking" | "signed-out" | "joining" | "signed-in";
@@ -68,7 +72,6 @@ export default function ProfilePage() {
   }, [configured, loadLocal, loadAccount]);
 
   const xp = computeTotalXp(history, cleanups);
-  const level = getLevelProgress(xp);
   const streak = getStreakDays(history);
   const litterRemoved = cleanups.reduce((sum, c) => sum + c.itemsRemoved, 0);
   const badgeCount = getUnlockedBadgeIds({ history, streak, cleanups }).size;
@@ -190,12 +193,14 @@ export default function ProfilePage() {
         </section>
       )}
 
+      <LevelBar />
+
+      <DailyChallengeCard />
+
       {/* Stats */}
       <section className="flex flex-col gap-2.5">
         <div className="rule-label">
-          <span className="eyebrow">
-            Level {level.level.level} · {level.level.title}
-          </span>
+          <span className="eyebrow">Totals</span>
         </div>
         <div className="flex flex-col">
           <div className="stat-row">
@@ -226,6 +231,10 @@ export default function ProfilePage() {
           </div>
         </div>
       </section>
+
+      <ImpactDashboard />
+
+      <BadgeGrid />
 
       {/* Location */}
       <section className="flex flex-col gap-2.5">

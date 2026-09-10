@@ -732,6 +732,45 @@ body {
   border-color: var(--moss);
 }
 
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.75rem 0.4rem;
+  border-radius: 12px;
+  border: 1px solid var(--rule);
+  text-align: center;
+  opacity: 0.4;
+}
+
+.badge.is-unlocked {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--moss) 40%, var(--rule));
+  background: var(--moss-wash);
+}
+
+.badge-mark {
+  font-size: 1.25rem;
+  filter: grayscale(1);
+}
+
+.badge.is-unlocked .badge-mark {
+  filter: none;
+}
+
+.badge-name {
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
 /* ---------------------------------------------------------------------------
    Cleanup Quest
    --------------------------------------------------------------------------- */
