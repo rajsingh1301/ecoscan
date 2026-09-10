@@ -7,10 +7,16 @@ import type { UserLocation } from "@/lib/types";
 
 interface LocationPickerProps {
   currentRegionKey?: string;
+  /** The picker is reused for onboarding and for editing, which want different verbs. */
+  action?: string;
   onSaved: (location: UserLocation) => void;
 }
 
-export default function LocationPicker({ currentRegionKey, onSaved }: LocationPickerProps) {
+export default function LocationPicker({
+  currentRegionKey,
+  action = "Save location",
+  onSaved,
+}: LocationPickerProps) {
   const [regionKey, setRegionKey] = useState(currentRegionKey ?? DEMO_REGIONS[0].key);
 
   function handleSave() {
@@ -44,7 +50,7 @@ export default function LocationPicker({ currentRegionKey, onSaved }: LocationPi
       </div>
 
       <button type="button" onClick={handleSave} className="btn btn-primary">
-        Start scanning
+        {action}
       </button>
     </div>
   );

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import CameraCapture from "@/components/CameraCapture";
-import LocationPicker from "@/components/LocationPicker";
 import VerdictCard from "@/components/VerdictCard";
 import DailyChallengeCard from "@/components/DailyChallengeCard";
 import ShareToCommunity from "@/components/ShareToCommunity";
@@ -23,7 +22,7 @@ interface IdentifyResponse {
   mock: boolean;
 }
 
-type Screen = "loading" | "needs-location" | "camera" | "identifying" | "result" | "error";
+type Screen = "loading" | "camera" | "identifying" | "result" | "error";
 
 export default function ScanPage() {
   const [screen, setScreen] = useState<Screen>("loading");
@@ -37,20 +36,10 @@ export default function ScanPage() {
   useEffect(() => {
     // localStorage is only available client-side; reading it post-mount (not
     // during render) is the standard Next.js pattern to avoid SSR mismatch.
-    const stored = getLocation();
-    if (stored) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUserLocation(stored);
-      setScreen("camera");
-    } else {
-      setScreen("needs-location");
-    }
-  }, []);
-
-  function handleLocationSaved(loc: UserLocation) {
-    setUserLocation(loc);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setUserLocation(getLocation());
     setScreen("camera");
-  }
+  }, []);
 
   async function handleCapture(base64Image: string) {
     if (!location) return;
@@ -143,46 +132,6 @@ export default function ScanPage() {
 
   if (screen === "loading") {
     return null;
-  }
-
-  if (screen === "needs-location") {
-    return (
-      <div className="shell flex flex-col gap-7 fade-up">
-        <div className="flex flex-col gap-3">
-          <span className="eyebrow">First things first</span>
-          <h1 className="display text-[2.1rem]">
-            The same bottle belongs in different bins in different cities.
-          </h1>
-          <p className="text-[0.95rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-            Tell EcoScan where you are and every answer follows your local
-            collection rules — not a generic guess.
-          </p>
-        </div>
-        <LocationPicker onSaved={handleLocationSaved} />
-
-        <section className="flex flex-col gap-2.5">
-          <div className="rule-label">
-            <span className="eyebrow">Every scan ends in one of four</span>
-          </div>
-          <div className="streams">
-            {(
-              [
-                ["Recycle", "var(--recycle)", "Kerbside bin"],
-                ["Compost", "var(--compost)", "Food & garden"],
-                ["Landfill", "var(--landfill)", "General waste"],
-                ["Drop-off", "var(--dropoff)", "Batteries, e-waste"],
-              ] as const
-            ).map(([name, color, note]) => (
-              <div key={name} className="stream-row">
-                <span className="stream-swatch" style={{ background: color }} aria-hidden="true" />
-                <span className="stream-name">{name}</span>
-                <span className="stream-note">{note}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-    );
   }
 
   if (screen === "camera") {

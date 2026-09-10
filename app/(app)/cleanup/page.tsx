@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import CameraCapture from "@/components/CameraCapture";
-import LocationPicker from "@/components/LocationPicker";
 import ShareToCommunity from "@/components/ShareToCommunity";
 import { addCleanupRecord, getCleanups, getHistory, getLocation, getStreakDays } from "@/lib/storage";
 import { BADGES, CLEANUP_FULL_BONUS, getUnlockedBadgeIds } from "@/lib/gamification";
@@ -18,7 +17,6 @@ interface VerifyResponse extends CleanupVerification {
 
 type Screen =
   | "loading"
-  | "needs-location"
   | "intro"
   | "before-capture"
   | "scanning"
@@ -41,14 +39,9 @@ export default function CleanupPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const stored = getLocation();
-    if (stored) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUserLocation(stored);
-      setScreen("intro");
-    } else {
-      setScreen("needs-location");
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setUserLocation(getLocation());
+    setScreen("intro");
   }, []);
 
   function requestCoords() {
@@ -154,27 +147,6 @@ export default function CleanupPage() {
   }
 
   if (screen === "loading") return null;
-
-  if (screen === "needs-location") {
-    return (
-      <div className="shell flex flex-col gap-7 fade-up">
-        <div className="flex flex-col gap-3">
-          <span className="eyebrow">One thing first</span>
-          <h1 className="display text-[2rem]">Where are you cleaning?</h1>
-          <p className="text-[0.95rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-            Cleanup scoring uses your local disposal rules to work out what can
-            be recovered and what can&apos;t.
-          </p>
-        </div>
-        <LocationPicker
-          onSaved={(loc) => {
-            setUserLocation(loc);
-            setScreen("intro");
-          }}
-        />
-      </div>
-    );
-  }
 
   if (screen === "intro") {
     return (
