@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { clearHistory, getCleanups, getHistory, getStreakDays } from "@/lib/storage";
+import { clearRemoteProgress } from "@/lib/sync";
 import { VERDICT_STYLES } from "@/lib/verdictStyles";
 import type { CleanupRecord, ScanRecord, Verdict } from "@/lib/types";
 import { VERDICTS } from "@/lib/types";
@@ -34,6 +35,7 @@ export default function ImpactDashboard() {
 
   function handleClear() {
     clearHistory();
+    void clearRemoteProgress().catch(() => {});
     setHistory([]);
     setCleanups([]);
   }

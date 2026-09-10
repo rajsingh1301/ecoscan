@@ -102,6 +102,22 @@ export async function pushCleanup(record: CleanupRecord): Promise<void> {
   await createClient().from("cleanups").upsert(cleanupToRow(record, userId));
 }
 
+/**
+ * Clearing history has to reach the account too. Without this the next sync
+ * pulls everything straight back and the button looks broken.
+ */
+export async function clearRemoteProgress(): Promise<void> {
+  const userId = await currentUserId();
+  if (!userId) return;
+
+  const supabase = createClient();
+  await Promise.all([
+    supabase.from("scans").delete().eq("user_id", userId),
+    supabase.from("cleanups").delete().eq("user_id", userId),
+    supabase.from("profiles").update({ total_xp: 0 }).eq("id", userId),
+  ]);
+}
+
 function mergeById<T extends { id: string; timestamp: string }>(a: T[], b: T[]): T[] {
   const byId = new Map<string, T>();
   for (const record of [...a, ...b]) byId.set(record.id, record);
