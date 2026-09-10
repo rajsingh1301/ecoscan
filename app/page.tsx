@@ -48,8 +48,8 @@ export default function LandingPage() {
           </div>
 
           <p className="text-[0.8rem]" style={{ color: "var(--ink-faint)" }}>
-            Free, and no password — we email you a short code. Runs in the
-            browser, installs like an app.
+            Try it as a guest, no signup. Make an account when you want your
+            rank and streak to follow you to another phone.
           </p>
         </div>
 

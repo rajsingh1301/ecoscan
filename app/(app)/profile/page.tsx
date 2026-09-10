@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import RankCard from "@/components/RankCard";
 import type { User } from "@supabase/supabase-js";
 import LocationPicker from "@/components/LocationPicker";
@@ -18,13 +19,14 @@ import {
   updateProfile,
   type Profile,
 } from "@/lib/community";
-import { getCleanups, getHistory, getLocation, getStreakDays } from "@/lib/storage";
+import { getCleanups, getHistory, getLocation, getStreakDays, setGuest } from "@/lib/storage";
 import { BADGES, computeTotalXp, getUnlockedBadgeIds } from "@/lib/gamification";
 import type { CleanupRecord, ScanRecord, UserLocation } from "@/lib/types";
 
-type AuthState = "checking" | "signed-in";
+type AuthState = "checking" | "guest" | "signed-in";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const configured = isSupabaseConfigured();
 
   const [authState, setAuthState] = useState<AuthState>("checking");
@@ -59,6 +61,8 @@ export default function ProfilePage() {
       setDraftName(found?.username ?? "");
       setDraftAvatar(found?.avatar_emoji ?? AVATAR_CHOICES[0]);
       setAuthState("signed-in");
+    } else {
+      setAuthState("guest");
     }
   }, []);
 
@@ -110,6 +114,18 @@ export default function ProfilePage() {
       </div>
 
       {/* Identity */}
+      {authState === "guest" && (
+        <div className="identity">
+          <Avatar seed="guest" emoji="🌱" size="lg" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[1rem] font-semibold">Guest</p>
+            <p className="text-[0.8rem]" style={{ color: "var(--ink-faint)" }}>
+              Saved in this browser only
+            </p>
+          </div>
+        </div>
+      )}
+
       {authState === "signed-in" && user && (
         <section className="flex flex-col gap-3.5">
           {!editing ? (
@@ -286,6 +302,31 @@ export default function ProfilePage() {
           <p className="text-[0.85rem]" style={{ color: "var(--ink-soft)" }}>
             Accounts aren&apos;t configured for this deployment.
           </p>
+        )}
+
+        {configured && authState === "guest" && (
+          <>
+            <p className="text-[0.85rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+              You&apos;re using EcoScan as a guest, so everything above lives in
+              this browser. Sign in and it moves to an account — nothing you have
+              already earned is lost.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/login?next=/profile" className="btn btn-primary">
+                Save my progress
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setGuest(false);
+                  router.push("/login");
+                }}
+                className="btn btn-quiet"
+              >
+                Leave guest mode
+              </button>
+            </div>
+          </>
         )}
 
         {configured && authState === "signed-in" && (

@@ -3,13 +3,18 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { isGuest } from "@/lib/storage";
 
 type Status = "checking" | "allowed";
 
 /**
- * Gates the app routes behind a session. This is a UX gate, not the security
- * boundary — that is row level security on the database, which is what
- * actually stops one account reading or writing another's data.
+ * Lets someone through on either a real session or an explicit guest choice,
+ * so the app can be tried before an account exists.
+ *
+ * This is a UX gate, not the security boundary — that is row level security on
+ * the database, which is what actually stops one account reading or writing
+ * another's data. A guest has no session at all, so there is nothing for them
+ * to reach: their data never leaves this browser.
  */
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -32,13 +37,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }
 
     void supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setStatus("allowed");
+      if (data.user || isGuest()) setStatus("allowed");
       else sendToLogin();
     });
 
     // Covers signing out in another tab and a session expiring mid-visit.
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT" || (!session && event !== "INITIAL_SESSION")) {
+    // Leaving guest mode clears the flag first, so this catches that too.
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT" && !isGuest()) {
         setStatus("checking");
         sendToLogin();
       }

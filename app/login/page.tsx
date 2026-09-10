@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import JoinCommunity from "@/components/JoinCommunity";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { setGuest } from "@/lib/storage";
 import { syncProgress } from "@/lib/sync";
 
 function LoginForm() {
@@ -17,6 +18,9 @@ function LoginForm() {
   const destination = next.startsWith("/") && !next.startsWith("//") ? next : "/scan";
 
   const finish = useCallback(async () => {
+    // Signing in supersedes guest mode; the sync then carries whatever was
+    // done as a guest up into the account rather than dropping it.
+    setGuest(false);
     await syncProgress().catch(() => {});
     router.replace(destination);
   }, [router, destination]);
@@ -53,7 +57,33 @@ function LoginForm() {
     );
   }
 
-  return <JoinCommunity prompt="Enter your email to sign in" onJoined={finish} />;
+  return (
+    <div className="flex flex-col gap-5">
+      <JoinCommunity prompt="Enter your email to sign in" onJoined={finish} />
+
+      <div className="rule-label">
+        <span className="eyebrow">Or</span>
+      </div>
+
+      <div className="flex flex-col gap-2.5">
+        <button
+          type="button"
+          onClick={() => {
+            setGuest(true);
+            router.replace(destination);
+          }}
+          className="btn btn-quiet"
+        >
+          Continue as a guest
+        </button>
+        <p className="text-[0.78rem] leading-relaxed" style={{ color: "var(--ink-faint)" }}>
+          Try everything straight away. Your scans, rank and streak stay in this
+          browser only — clearing site data or switching phones loses them. Sign
+          in later and whatever you&apos;ve done comes with you.
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export default function LoginPage() {

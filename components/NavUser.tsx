@@ -5,8 +5,9 @@ import Link from "next/link";
 import Avatar from "@/components/Avatar";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { getProfile, type Profile } from "@/lib/community";
+import { isGuest } from "@/lib/storage";
 
-type State = "checking" | "signed-out" | "signed-in";
+type State = "checking" | "signed-out" | "guest" | "signed-in";
 
 export default function NavUser() {
   const [state, setState] = useState<State>("checking");
@@ -25,7 +26,7 @@ export default function NavUser() {
       const { data } = await supabase.auth.getUser();
       if (!data.user) {
         setProfile(null);
-        setState("signed-out");
+        setState(isGuest() ? "guest" : "signed-out");
         return;
       }
       setProfile(await getProfile(data.user.id));
@@ -44,6 +45,14 @@ export default function NavUser() {
     return (
       <Link href="/login" className="navlink">
         Sign in
+      </Link>
+    );
+  }
+
+  if (state === "guest") {
+    return (
+      <Link href="/profile" title="Guest — your data is on this device only">
+        <Avatar seed="guest" emoji="🌱" size="sm" />
       </Link>
     );
   }

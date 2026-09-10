@@ -1,11 +1,28 @@
 import type { CleanupRecord, ScanRecord, UserLocation } from "@/lib/types";
 
+const GUEST_KEY = "ecoscan:guest";
 const LOCATION_KEY = "ecoscan:location";
 const HISTORY_KEY = "ecoscan:history";
 const CLEANUPS_KEY = "ecoscan:cleanups";
 
 function isBrowser(): boolean {
   return typeof window !== "undefined";
+}
+
+/**
+ * Guest mode lets someone use the whole app before deciding to make an
+ * account. Everything they do stays in this browser until they sign in, at
+ * which point the sync merges it into the account rather than discarding it.
+ */
+export function isGuest(): boolean {
+  if (!isBrowser()) return false;
+  return window.localStorage.getItem(GUEST_KEY) === "true";
+}
+
+export function setGuest(on: boolean): void {
+  if (!isBrowser()) return;
+  if (on) window.localStorage.setItem(GUEST_KEY, "true");
+  else window.localStorage.removeItem(GUEST_KEY);
 }
 
 export function getLocation(): UserLocation | null {
