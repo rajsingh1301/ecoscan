@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Figtree } from "next/font/google";
 import Link from "next/link";
 import HeaderXpBadge from "@/components/HeaderXpBadge";
+import NavUser from "@/components/NavUser";
 import ProgressSync from "@/components/ProgressSync";
 import "./globals.css";
 
@@ -49,10 +50,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Link href="/community" className="navlink">
                 Feed
               </Link>
-              <Link href="/profile" className="navlink">
-                Profile
-              </Link>
               <HeaderXpBadge />
+              <NavUser />
             </nav>
           </div>
         </header>

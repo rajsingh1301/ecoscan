@@ -48,7 +48,8 @@ export default function LandingPage() {
           </div>
 
           <p className="text-[0.8rem]" style={{ color: "var(--ink-faint)" }}>
-            No signup needed. Works in the browser, installs like an app.
+            Free, and no password — we email you a short code. Runs in the
+            browser, installs like an app.
           </p>
         </div>
 

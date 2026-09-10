@@ -2,10 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import RankCard from "@/components/RankCard";
 import type { User } from "@supabase/supabase-js";
-import JoinCommunity from "@/components/JoinCommunity";
 import LocationPicker from "@/components/LocationPicker";
 import Avatar from "@/components/Avatar";
 import StreakCalendar from "@/components/StreakCalendar";
@@ -20,18 +18,16 @@ import {
   updateProfile,
   type Profile,
 } from "@/lib/community";
-import { syncProgress } from "@/lib/sync";
 import { getCleanups, getHistory, getLocation, getStreakDays } from "@/lib/storage";
 import { BADGES, computeTotalXp, getUnlockedBadgeIds } from "@/lib/gamification";
 import type { CleanupRecord, ScanRecord, UserLocation } from "@/lib/types";
 
-type AuthState = "checking" | "signed-out" | "joining" | "signed-in";
+type AuthState = "checking" | "signed-in";
 
 export default function ProfilePage() {
-  const router = useRouter();
   const configured = isSupabaseConfigured();
 
-  const [authState, setAuthState] = useState<AuthState>(configured ? "checking" : "signed-out");
+  const [authState, setAuthState] = useState<AuthState>("checking");
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
 
@@ -63,8 +59,6 @@ export default function ProfilePage() {
       setDraftName(found?.username ?? "");
       setDraftAvatar(found?.avatar_emoji ?? AVATAR_CHOICES[0]);
       setAuthState("signed-in");
-    } else {
-      setAuthState("signed-out");
     }
   }, []);
 
@@ -101,11 +95,9 @@ export default function ProfilePage() {
   }
 
   async function handleSignOut() {
+    // The route guard sees the session end and sends us to /login, so there is
+    // no local state to unwind here.
     await signOut();
-    setUser(null);
-    setProfile(null);
-    setAuthState("signed-out");
-    setNotice(null);
   }
 
   return (
@@ -118,18 +110,6 @@ export default function ProfilePage() {
       </div>
 
       {/* Identity */}
-      {authState !== "signed-in" && (
-        <div className="identity">
-          <Avatar seed="guest" emoji="🌱" size="lg" />
-          <div className="min-w-0 flex-1">
-            <p className="text-[1rem] font-semibold">Guest</p>
-            <p className="text-[0.8rem]" style={{ color: "var(--ink-faint)" }}>
-              Progress saved on this device
-            </p>
-          </div>
-        </div>
-      )}
-
       {authState === "signed-in" && user && (
         <section className="flex flex-col gap-3.5">
           {!editing ? (
@@ -324,43 +304,6 @@ export default function ProfilePage() {
           </>
         )}
 
-        {configured && authState === "signed-out" && (
-          <>
-            <p className="text-[0.85rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-              Everything above is saved on this device only. Add an account and it
-              survives a cleared browser or a new phone.
-            </p>
-            <button
-              type="button"
-              onClick={() => setAuthState("joining")}
-              className="btn btn-quiet self-start"
-            >
-              Save my progress
-            </button>
-          </>
-        )}
-
-        {configured && authState === "joining" && (
-          <>
-            <JoinCommunity
-              prompt="Save your progress to an account"
-              onJoined={async () => {
-                await loadAccount();
-                await syncProgress().catch(() => {});
-                loadLocal();
-                router.refresh();
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => setAuthState("signed-out")}
-              className="text-[0.82rem] underline underline-offset-2 self-start"
-              style={{ color: "var(--ink-faint)" }}
-            >
-              Not now
-            </button>
-          </>
-        )}
       </section>
     </div>
   );

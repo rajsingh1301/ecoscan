@@ -62,8 +62,13 @@ zero items removed rather than rubber-stamping the claim.
 ### F7. Community
 A shared feed where people post verified cleanups, badge unlocks, level-ups, and streaks.
 
-- **Auth:** Google sign-in via Supabase. A profile row is created on first sign-in using the
-  Google display name, so there is no separate signup step.
+- **Auth:** passwordless email OTP via Supabase — one flow serves both signup and login, and a
+  display name and avatar are chosen once on first sign-in. Google OAuth was the original choice
+  but needs an activated Google Cloud billing account, which was a hard blocker.
+- **The app requires an account.** Everything under `app/(app)/` sits behind `AuthGuard`, which
+  redirects to `/login?next=…` and returns the visitor to where they were headed. The guard is a
+  UX gate, not the security boundary — **row level security is what actually protects the data**,
+  and it is enforced whether or not the client behaves.
 - **Communities are cities.** The region the user already selected doubles as their community;
   the feed has a *My city*, a *Global*, and a *Cities* leaderboard tab. No new concept to manage.
 - **Reactions only** (👏). Comments are deliberately out of scope — they would add a text
@@ -104,7 +109,7 @@ Alongside it: XP per scan (by verdict) and per verified cleanup, a 7-tier level 
 ## 4. Explicitly Out of Scope (for this hackathon)
 
 - Native iOS/Android apps (PWA only).
-- User accounts / auth / multi-device sync (single-device local storage is enough).
+- Password-based accounts or social login (email OTP covers signup, login and recovery in one flow).
 - Real-time municipal API integration (we ship with a curated static rules dataset for a handful of demo cities/regions + a sensible generic fallback).
 - Payment, ads, or any monetization.
 - Support for languages other than English (stretch only, not MVP).

@@ -107,10 +107,10 @@ export default function JoinCommunity({
   }
 
   return (
-    <div className="w-full rounded-xl border border-black/10 dark:border-white/20 p-4 flex flex-col gap-3">
-      <p className="text-sm font-medium">{prompt}</p>
+    <div className="w-full rounded-2xl border p-4 flex flex-col gap-3" style={{ borderColor: "var(--rule-strong)", background: "var(--surface)" }}>
+      <p className="text-[0.92rem] font-semibold">{prompt}</p>
 
-      {notice && <p className="text-xs text-black/60 dark:text-white/60">{notice}</p>}
+      {notice && <p className="text-[0.8rem]" style={{ color: "var(--ink-soft)" }}>{notice}</p>}
 
       {step === "email" && (
         <>
@@ -121,17 +121,17 @@ export default function JoinCommunity({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="w-full rounded-lg border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm"
+            className="field"
           />
           <button
             type="button"
             onClick={handleSendCode}
             disabled={busy}
-            className="rounded-full bg-emerald-600 text-white text-sm font-medium py-2.5 disabled:opacity-50"
+            className="btn btn-primary"
           >
             {busy ? "Sending code…" : "Send me a code"}
           </button>
-          <p className="text-[11px] text-black/40 dark:text-white/40 text-center">
+          <p className="text-[0.7rem] text-center" style={{ color: "var(--ink-faint)" }}>
             No password. We email you a code to sign in.
           </p>
         </>
@@ -146,17 +146,17 @@ export default function JoinCommunity({
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, MAX_CODE_LENGTH))}
             placeholder="Enter code"
-            className="w-full rounded-lg border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-center text-lg tracking-[0.3em] font-mono"
+            className="field text-center text-lg tracking-[0.3em] font-mono"
           />
           <button
             type="button"
             onClick={handleVerify}
             disabled={busy}
-            className="rounded-full bg-emerald-600 text-white text-sm font-medium py-2.5 disabled:opacity-50"
+            className="btn btn-primary"
           >
             {busy ? "Verifying…" : "Verify code"}
           </button>
-          <div className="flex justify-between text-[11px]">
+          <div className="flex justify-between text-[0.72rem]">
             <button
               type="button"
               onClick={() => {
@@ -165,7 +165,7 @@ export default function JoinCommunity({
                 setError(null);
                 setNotice(null);
               }}
-              className="text-black/40 dark:text-white/40 underline"
+              className="underline underline-offset-2" style={{ color: "var(--ink-faint)" }}
             >
               Use a different email
             </button>
@@ -173,7 +173,7 @@ export default function JoinCommunity({
               type="button"
               onClick={handleSendCode}
               disabled={busy}
-              className="text-black/40 dark:text-white/40 underline disabled:opacity-50"
+              className="underline underline-offset-2 disabled:opacity-50" style={{ color: "var(--ink-faint)" }}
             >
               Resend code
             </button>
@@ -183,17 +183,14 @@ export default function JoinCommunity({
 
       {step === "profile" && (
         <>
-          <div className="flex gap-1 flex-wrap">
+          <div className="avatar-picker">
             {AVATAR_CHOICES.map((emoji) => (
               <button
                 key={emoji}
                 type="button"
                 onClick={() => setAvatar(emoji)}
-                className={`w-9 h-9 rounded-full text-lg transition ${
-                  avatar === emoji
-                    ? "bg-emerald-100 dark:bg-emerald-900 ring-2 ring-emerald-500"
-                    : "bg-black/5 dark:bg-white/10"
-                }`}
+                aria-pressed={avatar === emoji}
+                className="avatar-option"
               >
                 {emoji}
               </button>
@@ -205,20 +202,20 @@ export default function JoinCommunity({
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Display name"
             maxLength={40}
-            className="w-full rounded-lg border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm"
+            className="field"
           />
           <button
             type="button"
             onClick={handleCreateProfile}
             disabled={busy}
-            className="rounded-full bg-emerald-600 text-white text-sm font-medium py-2.5 disabled:opacity-50"
+            className="btn btn-primary"
           >
             {busy ? "Creating…" : "Finish"}
           </button>
         </>
       )}
 
-      {error && <p className="text-xs text-orange-600 dark:text-orange-400">{error}</p>}
+      {error && <p className="text-[0.8rem]" style={{ color: "var(--dropoff)" }}>{error}</p>}
     </div>
   );
 }
