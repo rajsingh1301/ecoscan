@@ -80,7 +80,12 @@ insert behind a server route with a secret key is the fix, and is the next thing
 grows beyond a demo.
 
 ### F8. Gamification
-XP per scan (by verdict) and per verified cleanup, a 7-tier level ladder (Seedling → Eco Legend),
+A competitive rank ladder in the shape players already know from BGMI and Free Fire — Bronze
+through Legend, three divisions per tier — sitting on the same XP earned per scan and per verified
+cleanup, plus **Global / Country / City leaderboards** (`/ranks`). Country is derived from the
+region key's prefix rather than stored separately, and only players with an account are ranked.
+
+Alongside it: XP per scan (by verdict) and per verified cleanup, a 7-tier level ladder (Seedling → Eco Legend),
 12 achievement badges, and a rotating daily challenge. All of it is **derived from stored records**
 (`lib/gamification.ts`) rather than kept as a separate counter, so there is no state to drift.
 

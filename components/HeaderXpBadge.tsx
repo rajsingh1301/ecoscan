@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { getCleanups, getHistory } from "@/lib/storage";
-import { computeTotalXp, getLevelProgress } from "@/lib/gamification";
+import { computeTotalXp } from "@/lib/gamification";
+import { getRank } from "@/lib/ranks";
 
 export default function HeaderXpBadge() {
   const [xp, setXp] = useState<number | null>(null);
@@ -14,12 +16,17 @@ export default function HeaderXpBadge() {
 
   if (xp === null) return null;
 
-  const { level } = getLevelProgress(xp);
+  const rank = getRank(xp);
 
   return (
-    <span className="level-chip" title={`${level.title} · ${xp} XP`}>
+    <Link
+      href="/ranks"
+      className="level-chip"
+      style={{ ["--tier" as string]: rank.tier.color }}
+      title={`${rank.label} · ${xp} XP — see leaderboards`}
+    >
       <span className="level-chip-mark" aria-hidden="true" />
-      L{level.level}
-    </span>
+      {rank.tier.name}
+    </Link>
   );
 }

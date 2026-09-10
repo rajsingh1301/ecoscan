@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import RankCard from "@/components/RankCard";
 import type { User } from "@supabase/supabase-js";
 import JoinCommunity from "@/components/JoinCommunity";
 import LocationPicker from "@/components/LocationPicker";
@@ -215,6 +217,16 @@ export default function ProfilePage() {
           )}
         </section>
       )}
+
+      <RankCard xp={xp} />
+
+      <Link
+        href="/ranks"
+        className="text-[0.83rem] font-semibold underline underline-offset-2 self-start"
+        style={{ color: "var(--moss)" }}
+      >
+        See the leaderboards
+      </Link>
 
       <LevelBar />
 

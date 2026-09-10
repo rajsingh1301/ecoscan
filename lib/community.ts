@@ -257,6 +257,45 @@ export async function toggleReaction(
   return !error;
 }
 
+export interface RankedPlayer {
+  id: string;
+  username: string;
+  avatar_emoji: string;
+  city: string | null;
+  total_xp: number;
+}
+
+export type BoardScope = "global" | "country" | "city";
+
+/**
+ * Ranks players by the XP cached on their profile. Country is derived from the
+ * region key's prefix ("in-delhi" -> "in"), so no extra field is needed.
+ */
+export async function fetchPlayerBoard(
+  scope: BoardScope,
+  regionKey: string,
+  limit = 50
+): Promise<RankedPlayer[]> {
+  const supabase = createClient();
+
+  let query = supabase
+    .from("profiles")
+    .select("id, username, avatar_emoji, city, total_xp")
+    .order("total_xp", { ascending: false })
+    .limit(limit);
+
+  if (scope === "city") {
+    query = query.eq("city", regionKey);
+  } else if (scope === "country") {
+    const code = regionKey.split("-")[0];
+    query = query.like("city", `${code}-%`);
+  }
+
+  const { data, error } = await query;
+  if (error || !data) return [];
+  return data as RankedPlayer[];
+}
+
 export async function fetchCityLeaderboard(
   limit = 10
 ): Promise<{ city: string; itemsRemoved: number; posts: number }[]> {
