@@ -8,7 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import JoinCommunity from "@/components/JoinCommunity";
 import LocationPicker from "@/components/LocationPicker";
 import Avatar from "@/components/Avatar";
-import LevelBar from "@/components/LevelBar";
+import StreakCalendar from "@/components/StreakCalendar";
 import DailyChallengeCard from "@/components/DailyChallengeCard";
 import BadgeGrid from "@/components/BadgeGrid";
 import ImpactDashboard from "@/components/ImpactDashboard";
@@ -228,9 +228,9 @@ export default function ProfilePage() {
         See the leaderboards
       </Link>
 
-      <LevelBar />
-
       <DailyChallengeCard />
+
+      <StreakCalendar />
 
       {/* Stats */}
       <section className="flex flex-col gap-2.5">
@@ -253,10 +253,6 @@ export default function ProfilePage() {
           <div className="stat-row">
             <span style={{ color: "var(--ink-soft)" }}>Litter removed</span>
             <b>{litterRemoved}</b>
-          </div>
-          <div className="stat-row">
-            <span style={{ color: "var(--ink-soft)" }}>Day streak</span>
-            <b>{streak}</b>
           </div>
           <div className="stat-row">
             <span style={{ color: "var(--ink-soft)" }}>Badges</span>

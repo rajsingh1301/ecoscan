@@ -854,6 +854,92 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+   Streak calendar
+   --------------------------------------------------------------------------- */
+
+.streak-figure {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 30, "WONK" 1;
+  font-weight: 700;
+  font-size: 1.85rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The grid is wider than a phone by design, so it scrolls in its own track. */
+.cal-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  margin-inline: -0.1rem;
+  padding-inline: 0.1rem;
+}
+
+.cal-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.cal {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.cal-months,
+.cal-grid {
+  display: flex;
+  gap: 3px;
+}
+
+.cal-month {
+  width: 12px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.cal-week {
+  display: grid;
+  grid-template-rows: repeat(7, 12px);
+  gap: 3px;
+}
+
+.cal-day {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--rule);
+  flex: none;
+}
+
+.cal-day[data-level="none"] {
+  background: transparent;
+}
+
+.cal-day[data-level="1"] {
+  background: color-mix(in srgb, var(--moss) 38%, var(--rule));
+}
+
+.cal-day[data-level="2"] {
+  background: color-mix(in srgb, var(--moss) 68%, var(--rule));
+}
+
+.cal-day[data-level="3"] {
+  background: var(--moss);
+}
+
+.cal-day[data-level="4"] {
+  background: var(--hivis);
+}
+
+.cal-day.is-today {
+  outline: 1.5px solid var(--ink-soft);
+  outline-offset: 1px;
+}
+
+/* ---------------------------------------------------------------------------
    Leaderboard
    --------------------------------------------------------------------------- */
 
