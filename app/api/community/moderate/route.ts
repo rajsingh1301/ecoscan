@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { moderateImages } from "@/lib/claude";
+import { moderateImages } from "@/lib/ai";
 
 const MAX_IMAGES = 2;
 

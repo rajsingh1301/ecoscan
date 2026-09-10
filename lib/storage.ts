@@ -1,5 +1,11 @@
 import type { CleanupRecord, ScanRecord, UserLocation } from "@/lib/types";
 
+/**
+ * One cap for every writer. Adding a record used to trim to 200 while a sync
+ * wrote 500, so the first scan after a sync silently dropped 300 rows locally.
+ */
+const MAX_RECORDS = 500;
+
 const GUEST_KEY = "ecoscan:guest";
 const LOCATION_KEY = "ecoscan:location";
 const HISTORY_KEY = "ecoscan:history";
@@ -57,17 +63,17 @@ export function addScanRecord(record: ScanRecord): void {
   if (!isBrowser()) return;
   const history = getHistory();
   history.unshift(record);
-  window.localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 200)));
+  window.localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, MAX_RECORDS)));
 }
 
 export function replaceHistory(records: ScanRecord[]): void {
   if (!isBrowser()) return;
-  window.localStorage.setItem(HISTORY_KEY, JSON.stringify(records.slice(0, 500)));
+  window.localStorage.setItem(HISTORY_KEY, JSON.stringify(records.slice(0, MAX_RECORDS)));
 }
 
 export function replaceCleanups(records: CleanupRecord[]): void {
   if (!isBrowser()) return;
-  window.localStorage.setItem(CLEANUPS_KEY, JSON.stringify(records.slice(0, 500)));
+  window.localStorage.setItem(CLEANUPS_KEY, JSON.stringify(records.slice(0, MAX_RECORDS)));
 }
 
 export function clearHistory(): void {
@@ -92,7 +98,7 @@ export function addCleanupRecord(record: CleanupRecord): void {
   if (!isBrowser()) return;
   const cleanups = getCleanups();
   cleanups.unshift(record);
-  window.localStorage.setItem(CLEANUPS_KEY, JSON.stringify(cleanups.slice(0, 200)));
+  window.localStorage.setItem(CLEANUPS_KEY, JSON.stringify(cleanups.slice(0, MAX_RECORDS)));
 }
 
 export function getStreakDays(history: ScanRecord[]): number {

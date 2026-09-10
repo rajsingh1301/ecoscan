@@ -107,7 +107,7 @@ export default function CommunityPage() {
       <div className="max-w-sm text-center mt-12 flex flex-col gap-3">
         <div className="text-4xl">🌍</div>
         <h1 className="text-xl font-bold">Community isn&apos;t configured</h1>
-        <p className="text-sm text-black/60 dark:text-white/60">
+        <p className="text-[0.88rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
           Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY to enable the feed.
         </p>
       </div>
@@ -117,7 +117,10 @@ export default function CommunityPage() {
   return (
     <div className="w-full max-w-sm flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Community</h1>
+        <div className="flex flex-col gap-1">
+          <span className="eyebrow">Community</span>
+          <h1 className="display text-[1.9rem]">What people cleared today.</h1>
+        </div>
         {user && (
           <button
             type="button"
@@ -125,14 +128,14 @@ export default function CommunityPage() {
               await signOut();
               setUser(null);
             }}
-            className="text-xs text-black/50 dark:text-white/50 underline"
+            className="text-[0.78rem] underline underline-offset-2" style={{ color: "var(--ink-faint)" }}
           >
             Leave
           </button>
         )}
       </div>
 
-      <div className="flex gap-1 rounded-full border border-black/10 dark:border-white/20 p-1 text-sm">
+      <div className="tabs" role="tablist">
         {(
           [
             ["city", DEMO_REGIONS.find((r) => r.key === city)?.label.split(",")[0] ?? "My city"],
@@ -144,9 +147,9 @@ export default function CommunityPage() {
             key={key}
             type="button"
             onClick={() => setTab(key)}
-            className={`flex-1 rounded-full py-1.5 font-medium transition ${
-              tab === key ? "bg-emerald-600 text-white" : ""
-            }`}
+            className="tab"
+            role="tab"
+            aria-selected={tab === key}
           >
             {label}
           </button>
@@ -165,32 +168,32 @@ export default function CommunityPage() {
 
       {loadingFeed && (
         <div className="flex justify-center py-8">
-          <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <div className="spinner" />
         </div>
       )}
 
       {!loadingFeed && tab === "leaderboard" && (
         <div className="flex flex-col gap-2">
           {leaderboard.length === 0 ? (
-            <p className="text-sm text-center text-black/50 dark:text-white/50 py-8">
+            <p className="text-[0.88rem] text-center py-8" style={{ color: "var(--ink-soft)" }}>
               No cleanups shared yet — be the first!
             </p>
           ) : (
             leaderboard.map((row, index) => (
               <div
                 key={row.city}
-                className="flex items-center gap-3 rounded-xl border border-black/10 dark:border-white/20 p-3"
+                className="board-row"
               >
-                <span className="font-bold text-lg w-6">{index + 1}</span>
+                <span className="board-place">{index + 1}</span>
                 <div className="flex-1">
                   <p className="text-sm font-medium">
                     {DEMO_REGIONS.find((r) => r.key === row.city)?.label ?? row.city}
                   </p>
-                  <p className="text-xs text-black/50 dark:text-white/50">
+                  <p className="text-[0.75rem]" style={{ color: "var(--ink-faint)" }}>
                     {row.posts} cleanup{row.posts === 1 ? "" : "s"}
                   </p>
                 </div>
-                <span className="font-bold text-emerald-700 dark:text-emerald-300">
+                <span className="board-xp tabular" style={{ color: "var(--moss)" }}>
                   {row.itemsRemoved}
                 </span>
               </div>
@@ -202,7 +205,7 @@ export default function CommunityPage() {
       {!loadingFeed && tab !== "leaderboard" && (
         <div className="flex flex-col gap-4">
           {posts.length === 0 ? (
-            <p className="text-sm text-center text-black/50 dark:text-white/50 py-8">
+            <p className="text-[0.88rem] text-center py-8" style={{ color: "var(--ink-soft)" }}>
               Nothing here yet. Complete a Cleanup Quest and share it to start this feed.
             </p>
           ) : (

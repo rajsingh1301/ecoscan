@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyCleanup } from "@/lib/claude";
+import { verifyCleanup } from "@/lib/ai";
 import { CLEANUP_FULL_BONUS, CLEANUP_XP_PER_ITEM } from "@/lib/gamification";
 import { MATERIAL_CATEGORIES } from "@/lib/types";
 import type { DetectedItem, MaterialCategory } from "@/lib/types";

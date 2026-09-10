@@ -18,6 +18,7 @@ export default function ImpactDashboard() {
   const [history, setHistory] = useState<ScanRecord[]>([]);
   const [cleanups, setCleanups] = useState<CleanupRecord[]>([]);
   const [confirming, setConfirming] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -35,12 +36,20 @@ export default function ImpactDashboard() {
     counts[record.verdict] += 1;
   });
 
-  function handleClear() {
+  async function handleClear() {
+    setConfirming(false);
+    setFailed(false);
     clearHistory();
-    void clearRemoteProgress().catch(() => {});
     setHistory([]);
     setCleanups([]);
-    setConfirming(false);
+
+    // If the account rows survive, the next sync pulls everything back and the
+    // delete looks like it silently did nothing. Say so instead.
+    const ok = await clearRemoteProgress().then(
+      () => true,
+      () => false
+    );
+    if (!ok) setFailed(true);
   }
 
   if (history.length === 0 && cleanups.length === 0) {
@@ -105,6 +114,13 @@ export default function ImpactDashboard() {
               </div>
             ))}
           </div>
+
+          {failed && (
+            <p className="text-[0.8rem]" style={{ color: "var(--dropoff)" }}>
+              Cleared on this device, but your account still holds it — check
+              your connection and try again.
+            </p>
+          )}
 
           {!confirming ? (
             <button

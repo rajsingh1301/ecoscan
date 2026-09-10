@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { identifyImage, isMockMode } from "@/lib/claude";
+import { identifyImage } from "@/lib/ai";
 import { getVerdict, getReasonForVerdict } from "@/lib/rulesEngine";
 import type { MaterialCategory } from "@/lib/types";
 
@@ -38,6 +38,5 @@ export async function POST(request: Request) {
     confidence: identification.confidence,
     verdict,
     reason,
-    mock: isMockMode(),
   });
 }

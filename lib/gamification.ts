@@ -10,60 +10,17 @@ export const XP_TABLE: Record<Verdict, number> = {
 export const CLEANUP_XP_PER_ITEM = 20;
 export const CLEANUP_FULL_BONUS = 50;
 
-export interface Level {
-  level: number;
-  title: string;
-  emoji: string;
-  minXp: number;
-}
-
-export const LEVELS: Level[] = [
-  { level: 1, title: "Seedling", emoji: "🌱", minXp: 0 },
-  { level: 2, title: "Sprout", emoji: "🌿", minXp: 50 },
-  { level: 3, title: "Sapling", emoji: "🌳", minXp: 150 },
-  { level: 4, title: "Young Tree", emoji: "🌲", minXp: 350 },
-  { level: 5, title: "Growing Forest", emoji: "🏕️", minXp: 700 },
-  { level: 6, title: "Forest Guardian", emoji: "🏞️", minXp: 1300 },
-  { level: 7, title: "Eco Legend", emoji: "🌍", minXp: 2500 },
-];
-
-export function computeXp(history: ScanRecord[]): number {
+function computeScanXp(history: ScanRecord[]): number {
   return history.reduce((total, record) => total + XP_TABLE[record.verdict], 0);
 }
 
-export function computeCleanupXp(cleanups: CleanupRecord[]): number {
+function computeCleanupXp(cleanups: CleanupRecord[]): number {
   return cleanups.reduce((total, record) => total + record.xpEarned, 0);
 }
 
+/** The single XP figure everything else reads: ranks, the header chip, sync. */
 export function computeTotalXp(history: ScanRecord[], cleanups: CleanupRecord[]): number {
-  return computeXp(history) + computeCleanupXp(cleanups);
-}
-
-export interface LevelProgress {
-  level: Level;
-  next: Level | null;
-  xp: number;
-  xpIntoLevel: number;
-  xpForNextLevel: number;
-  progressPct: number;
-}
-
-export function getLevelProgress(xp: number): LevelProgress {
-  let current = LEVELS[0];
-  let next: Level | null = null;
-
-  for (let i = 0; i < LEVELS.length; i += 1) {
-    if (xp >= LEVELS[i].minXp) {
-      current = LEVELS[i];
-      next = LEVELS[i + 1] ?? null;
-    }
-  }
-
-  const xpIntoLevel = xp - current.minXp;
-  const xpForNextLevel = next ? next.minXp - current.minXp : Math.max(xpIntoLevel, 1);
-  const progressPct = next ? Math.min(100, Math.round((xpIntoLevel / xpForNextLevel) * 100)) : 100;
-
-  return { level: current, next, xp, xpIntoLevel, xpForNextLevel, progressPct };
+  return computeScanXp(history) + computeCleanupXp(cleanups);
 }
 
 export interface BadgeContext {
@@ -191,7 +148,7 @@ export interface DailyChallenge {
   progress: (todayHistory: ScanRecord[]) => number;
 }
 
-export const DAILY_CHALLENGES: DailyChallenge[] = [
+const DAILY_CHALLENGES: DailyChallenge[] = [
   { id: "scan_3", description: "Scan 3 items today", target: 3, progress: (h) => h.length },
   { id: "recycle_2", description: "Recycle 2 items today", target: 2, progress: (h) => countVerdict(h, "recycle") },
   { id: "compost_1", description: "Compost at least 1 item today", target: 1, progress: (h) => countVerdict(h, "compost") },

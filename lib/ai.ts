@@ -208,12 +208,6 @@ export async function identifyImage(base64Image: string): Promise<IdentifyResult
   return { itemName, materialCategory, confidence, reasoning };
 }
 
-export function isMockMode(): boolean {
-  return false;
-}
-
-export const SUPPORTED_CATEGORIES = MATERIAL_CATEGORIES;
-
 const MAX_SCENE_ITEMS = 40;
 
 const SCENE_SCAN_PROMPT = `You are analyzing a photo of a littered area for a community cleanup app.

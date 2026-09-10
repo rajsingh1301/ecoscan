@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { scanScene } from "@/lib/claude";
+import { scanScene } from "@/lib/ai";
 import { getVerdict } from "@/lib/rulesEngine";
 import { CLEANUP_XP_PER_ITEM } from "@/lib/gamification";
 import type { SceneScanResult } from "@/lib/types";

@@ -43,7 +43,7 @@ export default function ShareToCommunity({ post, prompt = "Share this to the com
 
   if (status === "done") {
     return (
-      <div className="w-full rounded-xl border border-emerald-500 bg-emerald-50 dark:bg-emerald-950 p-3 text-sm text-center">
+      <div className="w-full rounded-xl border p-3 text-[0.88rem] text-center" style={{ borderColor: "var(--moss)", background: "var(--moss-wash)" }}>
         ✅ Shared to the community
       </div>
     );
@@ -83,8 +83,8 @@ export default function ShareToCommunity({ post, prompt = "Share this to the com
   }
 
   return (
-    <div className="w-full rounded-xl border border-black/10 dark:border-white/20 p-4 flex flex-col gap-3">
-      <p className="text-sm font-medium">{prompt}</p>
+    <div className="w-full rounded-2xl border p-4 flex flex-col gap-3" style={{ borderColor: "var(--rule-strong)", background: "var(--surface)" }}>
+      <p className="text-[0.92rem] font-semibold">{prompt}</p>
 
       <input
         type="text"
@@ -92,22 +92,22 @@ export default function ShareToCommunity({ post, prompt = "Share this to the com
         onChange={(e) => setCaption(e.target.value)}
         placeholder="Add a caption (optional)"
         maxLength={140}
-        className="w-full rounded-lg border border-black/10 dark:border-white/20 bg-transparent px-3 py-2 text-sm"
+        className="field"
       />
 
-      {message && <p className="text-xs text-orange-600 dark:text-orange-400">{message}</p>}
+      {message && <p className="text-[0.8rem]" style={{ color: "var(--dropoff)" }}>{message}</p>}
 
       <button
         type="button"
         onClick={handlePublish}
         disabled={status === "publishing"}
-        className="rounded-full bg-emerald-600 text-white text-sm font-medium py-2.5 disabled:opacity-50"
+        className="btn btn-primary"
       >
         {status === "publishing" ? "Checking photos…" : "Share to community"}
       </button>
 
       {post.beforeImage && (
-        <p className="text-[11px] text-black/40 dark:text-white/40 text-center">
+        <p className="text-[0.7rem] text-center" style={{ color: "var(--ink-faint)" }}>
           Photos are screened before publishing. Only your city is shown, never your exact location.
         </p>
       )}

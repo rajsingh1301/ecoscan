@@ -12,12 +12,6 @@ export interface Profile {
   total_xp?: number;
 }
 
-export async function getCurrentUser(): Promise<User | null> {
-  const supabase = createClient();
-  const { data } = await supabase.auth.getUser();
-  return data.user ?? null;
-}
-
 export const AVATAR_CHOICES = ["🌱", "♻️", "🌍", "🧹", "🌳", "🦋", "🐝", "🌊"];
 
 export async function sendEmailOtp(email: string): Promise<{ ok: boolean; error?: string }> {
@@ -152,12 +146,12 @@ async function uploadPhoto(userId: string, dataUrl: string, suffix: string): Pro
   return data.publicUrl;
 }
 
-export interface ModerationResult {
+interface ModerationResult {
   allowed: boolean;
   reason: string;
 }
 
-export async function moderateImages(images: string[]): Promise<ModerationResult> {
+async function screenPhotos(images: string[]): Promise<ModerationResult> {
   try {
     const res = await fetch("/api/community/moderate", {
       method: "POST",
@@ -182,7 +176,7 @@ export async function createPost(
   let afterUrl: string | null = null;
 
   if (post.beforeImage && post.afterImage) {
-    const moderation = await moderateImages([post.beforeImage, post.afterImage]);
+    const moderation = await screenPhotos([post.beforeImage, post.afterImage]);
     if (!moderation.allowed) {
       return { ok: false, error: moderation.reason };
     }

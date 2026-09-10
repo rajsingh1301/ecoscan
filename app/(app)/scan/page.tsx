@@ -19,7 +19,6 @@ interface IdentifyResponse {
   confidence: ConfidenceLevel;
   verdict: Verdict;
   reason: string;
-  mock: boolean;
 }
 
 type Screen = "loading" | "camera" | "identifying" | "result" | "error";

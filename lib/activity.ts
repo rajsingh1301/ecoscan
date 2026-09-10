@@ -1,7 +1,7 @@
 import type { CleanupRecord, ScanRecord } from "@/lib/types";
 
 /** Local calendar day, so a day boundary matches the user's own midnight. */
-export function dayKey(date: Date): string {
+function dayKey(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${date.getFullYear()}-${month}-${day}`;
