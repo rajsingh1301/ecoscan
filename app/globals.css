@@ -177,6 +177,228 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+   Landing
+   --------------------------------------------------------------------------- */
+
+.wide {
+  width: 100%;
+  max-width: 60rem;
+  margin-inline: auto;
+}
+
+.hero {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+
+@media (min-width: 52rem) {
+  .hero {
+    grid-template-columns: 1.05fr 1fr;
+    gap: 3.5rem;
+  }
+}
+
+.hero-title {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 30, "WONK" 1;
+  font-weight: 700;
+  font-size: clamp(2.3rem, 7.5vw, 3.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.hero-turn {
+  color: var(--moss);
+}
+
+.hero-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0;
+}
+
+.hero-scene {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--rule-strong);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--moss) 10%, var(--surface)),
+    var(--sunken)
+  );
+  box-shadow: var(--shadow-lift);
+}
+
+.hero-scene-tag {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.8rem;
+  z-index: 2;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* A ground plane, so the pieces read as litter somewhere rather than dots. */
+.hero-ground {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 34%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--ink) 8%, transparent)
+  );
+}
+
+.hero-litter {
+  position: absolute;
+  transform-origin: center bottom;
+  box-shadow: 0 2px 6px -2px rgb(0 0 0 / 0.35);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s cubic-bezier(0.3, -0.4, 0.6, 1);
+}
+
+.hero-litter.is-gone {
+  opacity: 0;
+  transform: translateY(-14px) scale(0.5) rotate(12deg);
+}
+
+.hero-stamp {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  background: var(--hivis);
+  color: var(--on-hivis);
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  animation: stampIn 0.35s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+@keyframes stampIn {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-readout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.hero-demo-btn {
+  padding: 0.5rem 0.95rem;
+  font-size: 0.8rem;
+  flex: none;
+}
+
+.pitch {
+  display: grid;
+  gap: 1.6rem;
+}
+
+@media (min-width: 44rem) {
+  .pitch {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.2rem;
+  }
+}
+
+.pitch-item h3 {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 28, "WONK" 1;
+  font-weight: 650;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.45rem;
+}
+
+.pitch-item p {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.refusals {
+  display: grid;
+  gap: 0;
+}
+
+.refusal {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  padding: 0.95rem 0;
+  border-top: 1px solid var(--rule);
+  align-items: start;
+}
+
+.refusal:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+.refusal-mark {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--dropoff);
+  display: grid;
+  place-items: center;
+  color: var(--dropoff);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 0.1rem;
+}
+
+.refusal b {
+  font-weight: 650;
+  font-size: 0.93rem;
+}
+
+.refusal p {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin-top: 0.15rem;
+}
+
+.cta-band {
+  border-radius: 22px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: var(--shadow-lift);
+}
+
+/* ---------------------------------------------------------------------------
    Site header
    --------------------------------------------------------------------------- */
 
@@ -189,10 +411,11 @@ body {
   z-index: 20;
 }
 
+/* Matches the widest page container so the wordmark lines up with content. */
 .masthead-inner {
-  max-width: 26rem;
+  max-width: 60rem;
   margin-inline: auto;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -220,10 +443,18 @@ body {
   translate: 0 -0.1rem;
 }
 
+/* Rather than overflow the page on a small phone, the nav scrolls itself. */
 .navbar {
   display: flex;
   align-items: center;
   gap: 0.72rem;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.navbar::-webkit-scrollbar {
+  display: none;
 }
 
 .navlink {

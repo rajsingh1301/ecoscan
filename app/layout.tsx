@@ -40,6 +40,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <span className="wordmark-dot" aria-hidden="true" />
             </Link>
             <nav className="navbar">
+              <Link href="/scan" className="navlink">
+                Scan
+              </Link>
               <Link href="/cleanup" className="navlink">
                 Quest
               </Link>
